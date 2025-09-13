@@ -8,6 +8,7 @@
   REACT_APP_API_URL = "https://aurafix-backend.onrender.com"
   REACT_APP_SITE_URL = "https://kibetronoh.com"
   GENERATE_SOURCEMAP = "false"
+  CI = "false"
 
 [[redirects]]
   from = "/api/*"
