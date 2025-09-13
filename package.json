@@ -1,0 +1,28 @@
+{
+  "name": "aurafix-ecommerce",
+  "version": "1.0.0",
+  "description": "Premium cosmetics ecommerce store with 3D product visualization",
+  "main": "server/server.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\" \"npm run admin\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "admin": "cd admin && npm start",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install && cd ../admin && npm install",
+    "build": "cd client && npm run build && cd ../admin && npm run build",
+    "start": "cd server && npm start"
+  },
+  "keywords": [
+    "ecommerce",
+    "cosmetics",
+    "3d",
+    "react",
+    "nodejs",
+    "mongodb"
+  ],
+  "author": "AuraFix Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}

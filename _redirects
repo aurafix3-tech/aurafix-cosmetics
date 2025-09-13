@@ -1,0 +1,3 @@
+/admin/* /admin/index.html 200
+/api/* https://aurafix-backend.onrender.com/api/:splat 200!
+/* /index.html 200
