@@ -184,7 +184,7 @@ const Contact = () => {
               </div>
               <div className="info">
                 <h3>Email</h3>
-                <p>hello@aurafix.com</p>
+                <p>aurafix3@gmail.com</p>
               </div>
             </ContactItem>
 
@@ -194,7 +194,7 @@ const Contact = () => {
               </div>
               <div className="info">
                 <h3>Phone</h3>
-                <p>+1 (555) 123-4567</p>
+                <p>+254 741 218 862</p>
               </div>
             </ContactItem>
 
@@ -204,7 +204,7 @@ const Contact = () => {
               </div>
               <div className="info">
                 <h3>Address</h3>
-                <p>123 Beauty Street, New York, NY 10001</p>
+                <p>Egerton University, Njoro, Kenya</p>
               </div>
             </ContactItem>
 
@@ -214,7 +214,7 @@ const Contact = () => {
               </div>
               <div className="info">
                 <h3>Business Hours</h3>
-                <p>Mon - Fri: 9AM - 6PM EST</p>
+                <p>Mon - Fri: 8AM - 6PM EAT</p>
               </div>
             </ContactItem>
           </motion.div>

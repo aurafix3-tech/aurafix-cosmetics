@@ -8,7 +8,8 @@ require('dotenv').config();
 const seedData = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aurafix');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://aurafix:honeywellT55$@cluster0.y6e7drb.mongodb.net/aurafix?retryWrites=true&w=majority&appName=Cluster0');
+    console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Production database' : 'Local database');
     console.log('Connected to MongoDB');
 
     // Clear existing data
