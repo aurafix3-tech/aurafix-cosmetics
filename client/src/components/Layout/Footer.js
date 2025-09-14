@@ -233,15 +233,15 @@ const Footer = () => {
             <h3>Contact Info</h3>
             <ContactInfo>
               <Phone size={16} />
-              <span>+1 (555) 123-4567</span>
+              <span>+254 741 218 862</span>
             </ContactInfo>
             <ContactInfo>
               <Mail size={16} />
-              <span>hello@aurafix.com</span>
+              <span>aurafix3@gmail.com</span>
             </ContactInfo>
             <ContactInfo>
               <MapPin size={16} />
-              <span>123 Beauty Street, NY 10001</span>
+              <span>Egerton University, Njoro, Kenya</span>
             </ContactInfo>
 
             <Newsletter>

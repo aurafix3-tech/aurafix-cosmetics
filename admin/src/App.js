@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
+import GlobalStyles from './styles/GlobalStyles';
 
 // Components
 import Sidebar from './components/Layout/Sidebar';
@@ -16,6 +17,7 @@ import Categories from './pages/Categories';
 import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
 import Users from './pages/Users';
+import PageBackgrounds from './pages/PageBackgrounds';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
@@ -27,6 +29,7 @@ const AppContainer = styled.div`
   display: flex;
   min-height: 100vh;
   background: #f8fafc;
+  position: relative;
 `;
 
 const MainContent = styled.main`
@@ -35,9 +38,11 @@ const MainContent = styled.main`
   flex-direction: column;
   margin-left: ${props => props.sidebarCollapsed ? '80px' : '280px'};
   transition: margin-left 0.3s ease;
+  min-width: 0; /* Prevent content overflow */
 
   @media (max-width: 768px) {
     margin-left: 0;
+    width: 100%;
   }
 `;
 
@@ -45,6 +50,15 @@ const ContentArea = styled.div`
   flex: 1;
   padding: 24px;
   overflow-y: auto;
+  min-width: 0; /* Prevent content overflow */
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
 `;
 
 const pageVariants = {
@@ -61,11 +75,25 @@ const pageTransition = {
 
 function App() {
   const { isAuthenticated, user, checkAuth } = useAuthStore();
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
 
   React.useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile && !sidebarCollapsed) {
+        setSidebarCollapsed(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [sidebarCollapsed]);
 
   // Redirect non-admin users
   if (isAuthenticated && user?.role !== 'admin') {
@@ -90,13 +118,19 @@ function App() {
 
   return (
     <AppContainer>
+      <GlobalStyles />
       <Sidebar 
         collapsed={sidebarCollapsed}
+        isMobile={isMobile}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       
       <MainContent sidebarCollapsed={sidebarCollapsed}>
-        <Header />
+        <Header 
+          sidebarCollapsed={sidebarCollapsed}
+          isMobile={isMobile}
+          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
         
         <ContentArea>
           <AnimatePresence mode="wait">
@@ -211,6 +245,20 @@ function App() {
                       transition={pageTransition}
                     >
                       <Users />
+                    </motion.div>
+                  } 
+                />
+                <Route 
+                  path="/backgrounds" 
+                  element={
+                    <motion.div
+                      initial="initial"
+                      animate="in"
+                      exit="out"
+                      variants={pageVariants}
+                      transition={pageTransition}
+                    >
+                      <PageBackgrounds />
                     </motion.div>
                   } 
                 />

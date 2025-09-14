@@ -10,11 +10,14 @@ const productRoutes = require('./routes/products');
 const categoryRoutes = require('./routes/categories');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
+const pageBackgroundRoutes = require('./routes/pageBackgrounds');
 
 const app = express();
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors({
   origin: [
     'http://localhost:3000', 
@@ -25,7 +28,9 @@ app.use(cors({
     'https://jovial-otter-ea2ad2.netlify.app',
     /\.netlify\.app$/
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Rate limiting
@@ -46,7 +51,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static files
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('public/uploads'));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -54,6 +59,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/backgrounds', pageBackgroundRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

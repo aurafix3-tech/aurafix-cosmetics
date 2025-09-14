@@ -9,7 +9,7 @@ pause
 cd server
 
 REM Set production MongoDB URI (replace with your actual connection string)
-set MONGODB_URI=your_production_mongodb_connection_string_here
+set MONGODB_URI=mongodb+srv://aurafix:honeywellT55$@cluster0.y6e7drb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
 
 echo Connecting to production database...
 echo URI: %MONGODB_URI%

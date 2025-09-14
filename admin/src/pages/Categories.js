@@ -1,417 +1,383 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import {
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  MoreHorizontal,
-  FolderTree,
-  Image as ImageIcon,
-  Eye
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import styled from 'styled-components';
 import axios from 'axios';
-import toast from 'react-hot-toast';
-import LoadingSpinner from '../components/UI/LoadingSpinner';
+import { toast } from 'react-hot-toast';
+import { 
+  Plus, 
+  Search, 
+  ChevronDown, 
+  Filter, 
+  X, 
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUpDown,
+  ChevronUp,
+  ChevronDown as ChevronDownIcon,
+  MoreVertical,
+  PlusCircle,
+  Tag,
+  ListTree,
+  Folder,
+  FolderOpen,
+  Star,
+  Menu,
+  Grid,
+  RefreshCw
+} from 'lucide-react';
 
-const CategoriesContainer = styled.div`
+// Components
+import LoadingSpinner from '../components/UI/LoadingSpinner';
+import Button from '../components/UI/Button';
+import Modal from '../components/UI/Modal';
+import CategoryCard from '../components/categories/CategoryCard';
+import CategoryForm from '../components/categories/CategoryForm';
+import EmptyCategories from '../components/categories/EmptyCategories';
+
+// Styled Components
+const Container = styled.div`
+  padding: 1rem;
+  max-width: 100%;
+  overflow-x: hidden;
+  min-height: 100vh;
+  
+  @media (min-width: 640px) {
+    padding: 1.5rem;
+  }
+  
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+`;
+
+const Header = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
-`;
-
-const PageHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
-
-  .header-left {
-    h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #1f2937;
-      margin-bottom: 8px;
+  
+  .title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    
+    @media (min-width: 768px) {
+      font-size: 1.5rem;
     }
-
-    p {
+    
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
       color: #6b7280;
-    }
-  }
-`;
-
-const ActionButton = styled(motion.button)`
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  }
-`;
-
-const SearchCard = styled.div`
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  gap: 16px;
-  align-items: center;
-
-  .search-input {
-    position: relative;
-    flex: 1;
-
-    input {
-      width: 100%;
-      padding: 10px 16px 10px 40px;
-      border: 2px solid #e5e7eb;
-      border-radius: 8px;
-      outline: none;
-      transition: border-color 0.3s ease;
-
-      &:focus {
-        border-color: #667eea;
+      font-weight: normal;
+      
+      .divider {
+        color: #d1d5db;
+      }
+      
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        color: #4f46e5;
+        cursor: pointer;
+        
+        &:hover {
+          text-decoration: underline;
+        }
       }
     }
+  }
+`;
 
+const SearchAndFilter = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .search-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 100%;
+    
+    @media (min-width: 640px) {
+      max-width: 400px;
+    }
+    
+    input {
+      padding-left: 2.5rem;
+      width: 100%;
+      height: 44px;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+      font-size: 0.875rem;
+      
+      @media (min-width: 640px) {
+        height: 40px;
+        padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+      }
+      
+      &:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 1px #4f46e5;
+      }
+    }
+    
     .search-icon {
       position: absolute;
-      left: 12px;
+      left: 0.75rem;
       top: 50%;
       transform: translateY(-50%);
       color: #9ca3af;
+      pointer-events: none;
     }
   }
-`;
-
-const CategoriesGrid = styled.div`
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`;
-
-const CategoriesTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-
-  th {
-    background: #f8fafc;
-    padding: 16px;
-    text-align: left;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 14px;
-  }
-
-  td {
-    padding: 16px;
-    border-bottom: 1px solid #f3f4f6;
-    color: #6b7280;
-    font-size: 14px;
-  }
-
-  tr:hover {
-    background: #f9fafb;
-  }
-`;
-
-const CategoryInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  .category-image {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    background: #f3f4f6;
+  
+  .filters {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .placeholder {
-      color: #9ca3af;
-    }
-  }
-
-  .category-details {
-    .category-name {
-      font-weight: 600;
-      color: #1f2937;
-      margin-bottom: 2px;
-    }
-
-    .category-slug {
-      font-size: 12px;
-      color: #9ca3af;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    width: 100%;
+    
+    @media (min-width: 640px) {
+      width: auto;
     }
   }
 `;
 
-const CategoryHierarchy = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #6b7280;
-  font-size: 12px;
-
-  .separator {
-    color: #d1d5db;
-  }
-`;
-
-const ActionMenu = styled.div`
-  position: relative;
-  display: inline-block;
-
-  .menu-button {
-    background: none;
-    border: none;
-    padding: 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #6b7280;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background: #f3f4f6;
-      color: #374151;
-    }
-  }
-
-  .menu-dropdown {
-    position: absolute;
-    right: 0;
-    top: 100%;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    min-width: 150px;
-    overflow: hidden;
-  }
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
-    color: #374151;
-    text-decoration: none;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-
-    &:hover {
-      background: #f9fafb;
-    }
-
-    &.danger {
-      color: #dc2626;
-
-      &:hover {
-        background: #fee2e2;
+const CategoriesGrid = styled(motion.div).attrs(() => ({
+  initial: 'hidden',
+  animate: 'visible',
+  variants: {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
       }
     }
   }
+}))`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  @media (min-width: 1280px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  @media (min-width: 1536px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
 `;
 
-const Modal = styled(motion.div)`
+const MobileFloatingButton = styled(motion.button)`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-`;
-
-const ModalContent = styled(motion.div)`
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-
-  h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 20px;
+  cursor: pointer;
+  z-index: 40;
+  
+  @media (min-width: 640px) {
+    display: none;
+  }
+  
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  
+  &:hover {
+    background: #4338ca;
+    transform: scale(1.05);
   }
 `;
 
-const FormGroup = styled.div`
-  margin-bottom: 20px;
-
-  label {
-    display: block;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 8px;
-    font-size: 14px;
-  }
-
-  input, textarea, select {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    outline: none;
-    transition: border-color 0.3s ease;
-    font-size: 14px;
-
-    &:focus {
-      border-color: #667eea;
-    }
-  }
-
-  textarea {
-    min-height: 80px;
-    resize: vertical;
-  }
-`;
-
-const ModalActions = styled.div`
+// Pagination and Filters
+const Pagination = styled.div`
   display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-
-  button {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-
-    &.secondary {
-      background: white;
-      color: #374151;
-      border: 2px solid #e5e7eb;
-
-      &:hover {
-        border-color: #d1d5db;
-        background: #f9fafb;
-      }
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  
+  @media (min-width: 640px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .info {
+    font-size: 0.875rem;
+    color: #6b7280;
+    text-align: center;
+    
+    @media (min-width: 640px) {
+      text-align: left;
     }
-
-    &.primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-
-      &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+  
+  .pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    
+    @media (min-width: 640px) {
+      justify-content: flex-end;
+    }
+    
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.375rem;
+      border: 1px solid #e5e7eb;
+      background: white;
+      color: #4b5563;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 44px;
+      min-height: 44px;
+      
+      @media (min-width: 640px) {
+        min-width: auto;
+        min-height: auto;
       }
-
+      
+      &:hover:not(:disabled) {
+        background: #f9fafb;
+        border-color: #d1d5db;
+      }
+      
       &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
+      }
+      
+      &.active {
+        background: #4f46e5;
+        border-color: #4338ca;
+        color: white;
       }
     }
   }
 `;
 
+// Main Component
 const Categories = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [openMenuId, setOpenMenuId] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    parent: '',
-    image: null
-  });
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-
-  const { data: categories, isLoading } = useQuery(
-    ['categories', searchTerm],
+  
+  // State for modals and forms
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [breadcrumbs, setBreadcrumbs] = useState([{ id: null, name: 'All Categories' }]);
+  const [filters, setFilters] = useState({
+    status: 'all',
+    featured: 'all',
+    sortBy: 'name',
+    sortOrder: 'asc',
+    search: '',
+  });
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
+  // Get current parent ID from URL or default to null (root)
+  const parentId = searchParams.get('parent') || null;
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = parseInt(searchParams.get('limit') || '12', 10);
+  
+  // Fetch categories with filters
+  const { 
+    data: categoriesData, 
+    isLoading, 
+    isError, 
+    refetch 
+  } = useQuery(
+    ['categories', { parentId, page, limit, ...filters }],
     async () => {
-      const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      
-      const response = await axios.get(`/api/categories?${params}`);
-      return response.data;
-    }
-  );
-
-  const saveCategoryMutation = useMutation(
-    async (categoryData) => {
-      const formDataToSend = new FormData();
-      Object.keys(categoryData).forEach(key => {
-        if (categoryData[key] !== null && categoryData[key] !== '') {
-          formDataToSend.append(key, categoryData[key]);
-        }
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...(parentId && { parent: parentId }),
+        ...(filters.status !== 'all' && { status: filters.status }),
+        ...(filters.featured !== 'all' && { featured: filters.featured }),
+        ...(filters.sortBy && { sortBy: filters.sortBy }),
+        ...(filters.sortOrder && { sortOrder: filters.sortOrder }),
+        ...(filters.search && { search: filters.search }),
       });
-
-      if (editingCategory) {
-        return await axios.put(`/api/categories/${editingCategory._id}`, formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-      } else {
-        return await axios.post('/api/categories', formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-      }
+      
+      const { data } = await axios.get(`/api/admin/categories?${params.toString()}`);
+      return data;
     },
     {
-      onSuccess: () => {
-        queryClient.invalidateQueries('categories');
-        toast.success(`Category ${editingCategory ? 'updated' : 'created'} successfully`);
-        setShowModal(false);
-        resetForm();
+      keepPreviousData: true,
+      onSuccess: (data) => {
+        // Update breadcrumbs when parent changes
+        if (parentId && data.parent) {
+          const newBreadcrumbs = [
+            { id: null, name: 'All Categories' },
+            ...data.parent.ancestors.map(a => ({
+              id: a._id,
+              name: a.name,
+            })),
+            { id: data.parent._id, name: data.parent.name },
+          ];
+          setBreadcrumbs(newBreadcrumbs);
+        } else if (!parentId) {
+          setBreadcrumbs([{ id: null, name: 'All Categories' }]);
+        }
       },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || `Failed to ${editingCategory ? 'update' : 'create'} category`);
-      }
     }
   );
-
-  const deleteCategoryMutation = useMutation(
-    async (categoryId) => {
-      await axios.delete(`/api/categories/${categoryId}`);
-    },
+  
+  // Mutations
+  const deleteMutation = useMutation(
+    (id) => axios.delete(`/api/admin/categories/${id}`),
     {
       onSuccess: () => {
         queryClient.invalidateQueries('categories');
@@ -419,246 +385,359 @@ const Categories = () => {
       },
       onError: (error) => {
         toast.error(error.response?.data?.message || 'Failed to delete category');
-      }
+      },
     }
   );
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      parent: '',
-      image: null
-    });
-    setEditingCategory(null);
-  };
-
-  const handleEdit = (category) => {
-    setEditingCategory(category);
-    setFormData({
-      name: category.name,
-      description: category.description || '',
-      parent: category.parent?._id || '',
-      image: null
-    });
-    setShowModal(true);
-  };
-
-  const handleDelete = async (categoryId) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
-      deleteCategoryMutation.mutate(categoryId);
+  
+  const toggleStatusMutation = useMutation(
+    ({ id, isActive }) => axios.patch(`/api/admin/categories/${id}/status`, { isActive }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('categories');
+        toast.success('Category status updated');
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Failed to update category status');
+      },
     }
-  };
-
-  const handleSubmit = (e) => {
+  );
+  
+  // Handlers
+  const handleSearch = (e) => {
     e.preventDefault();
-    saveCategoryMutation.mutate(formData);
+    const searchValue = e.target.search.value;
+    setFilters(prev => ({ ...prev, search: searchValue }));
+    setSearchParams(prev => {
+      prev.set('page', '1');
+      if (searchValue) {
+        prev.set('search', searchValue);
+      } else {
+        prev.delete('search');
+      }
+      return prev;
+    });
   };
-
-  const getCategoryPath = (category) => {
-    const path = [];
-    let current = category;
-    
-    while (current) {
-      path.unshift(current.name);
-      current = current.parent;
+  
+  const handlePageChange = (newPage) => {
+    setSearchParams(prev => {
+      prev.set('page', newPage.toString());
+      return prev;
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  const handleBreadcrumbClick = (id) => {
+    if (id === null) {
+      setSearchParams({});
+    } else {
+      setSearchParams({ parent: id });
     }
-    
-    return path;
   };
-
-  if (isLoading) return <LoadingSpinner />;
-
-  return (
-    <CategoriesContainer>
-      <PageHeader>
-        <div className="header-left">
-          <h1>Categories</h1>
-          <p>Organize your products with categories</p>
+  
+  const handleViewSubcategories = (category) => {
+    setSearchParams({ parent: category._id });
+  };
+  
+  const handleEdit = (category) => {
+    setSelectedCategory(category);
+    setIsFormOpen(true);
+  };
+  
+  const handleDelete = (category) => {
+    if (window.confirm(`Are you sure you want to delete "${category.name}"? This action cannot be undone.`)) {
+      deleteMutation.mutate(category._id);
+    }
+  };
+  
+  const handleToggleStatus = (category) => {
+    toggleStatusMutation.mutate({ 
+      id: category._id, 
+      isActive: !category.isActive 
+    });
+  };
+  
+  const handleFormSuccess = () => {
+    setIsFormOpen(false);
+    setSelectedCategory(null);
+    refetch();
+  };
+  
+  // Calculate pagination
+  const totalPages = categoriesData?.pagination?.totalPages || 1;
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
+  
+  if (isLoading && !categoriesData) {
+    return (
+      <Container>
+        <div className="flex items-center justify-center h-64">
+          <LoadingSpinner size="lg" />
         </div>
-        <ActionButton
-          onClick={() => setShowModal(true)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <Plus size={16} />
-          Add Category
-        </ActionButton>
-      </PageHeader>
-
-      <SearchCard>
-        <div className="search-input">
-          <Search size={16} className="search-icon" />
+      </Container>
+    );
+  }
+  
+  if (isError) {
+    return (
+      <Container>
+        <div className="p-4 text-center text-red-600 bg-red-50 rounded-lg">
+          Failed to load categories. Please try again.
+          <button 
+            onClick={() => refetch()}
+            className="ml-2 text-blue-600 hover:underline"
+          >
+            Retry
+          </button>
+        </div>
+      </Container>
+    );
+  }
+  
+  return (
+    <Container>
+      {/* Header with Breadcrumbs */}
+      <Header>
+        <h1 className="title">
+          <FolderOpen className="w-6 h-6 text-indigo-600" />
+          <span>
+            {parentId ? 'Subcategories' : 'Categories'}
+            {categoriesData?.pagination?.totalCount !== undefined && (
+              <span className="ml-2 text-sm font-normal text-gray-500">
+                ({categoriesData.pagination.totalCount} {categoriesData.pagination.totalCount === 1 ? 'item' : 'items'})
+              </span>
+            )}
+          </span>
+          
+          {breadcrumbs.length > 1 && (
+            <div className="breadcrumb">
+              <span className="divider">/</span>
+              {breadcrumbs.map((item, index) => (
+                <React.Fragment key={item.id || 'root'}>
+                  {index > 0 && <span className="divider">/</span>}
+                  <button 
+                    onClick={() => handleBreadcrumbClick(item.id)}
+                    className={`back-btn ${index === breadcrumbs.length - 1 ? 'font-medium text-gray-900' : ''}`}
+                  >
+                    {item.name}
+                  </button>
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+        </h1>
+        
+        <div className="hidden md:flex gap-2">
+          <Button 
+            variant="primary"
+            onClick={() => {
+              setSelectedCategory(null);
+              setIsFormOpen(true);
+            }}
+            icon={<Plus className="w-4 h-4" />}
+          >
+            Add Category
+          </Button>
+        </div>
+      </Header>
+      
+      {/* Search and Filters */}
+      <SearchAndFilter>
+        <form onSubmit={handleSearch} className="search-wrapper">
+          <Search className="search-icon" size={18} />
           <input
             type="text"
+            name="search"
             placeholder="Search categories..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            defaultValue={filters.search}
+            className="search-input"
           />
-        </div>
-      </SearchCard>
-
-      <CategoriesGrid>
-        <CategoriesTable>
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Hierarchy</th>
-              <th>Products</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories?.map((category) => (
-              <tr key={category._id}>
-                <td>
-                  <CategoryInfo>
-                    <div className="category-image">
-                      {category.image ? (
-                        <img src={category.image} alt={category.name} />
-                      ) : (
-                        <FolderTree size={20} className="placeholder" />
-                      )}
-                    </div>
-                    <div className="category-details">
-                      <div className="category-name">{category.name}</div>
-                      <div className="category-slug">/{category.slug}</div>
-                    </div>
-                  </CategoryInfo>
-                </td>
-                <td>
-                  <CategoryHierarchy>
-                    {getCategoryPath(category).map((name, index, array) => (
-                      <React.Fragment key={index}>
-                        {name}
-                        {index < array.length - 1 && <span className="separator">→</span>}
-                      </React.Fragment>
-                    ))}
-                  </CategoryHierarchy>
-                </td>
-                <td>{category.productCount || 0}</td>
-                <td>
-                  <ActionMenu>
-                    <button
-                      className="menu-button"
-                      onClick={() => setOpenMenuId(openMenuId === category._id ? null : category._id)}
-                    >
-                      <MoreHorizontal size={16} />
-                    </button>
-                    {openMenuId === category._id && (
-                      <div className="menu-dropdown">
-                        <button
-                          className="menu-item"
-                          onClick={() => handleEdit(category)}
-                        >
-                          <Edit size={14} />
-                          Edit
-                        </button>
-                        <button
-                          className="menu-item danger"
-                          onClick={() => handleDelete(category._id)}
-                        >
-                          <Trash2 size={14} />
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </ActionMenu>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </CategoriesTable>
-      </CategoriesGrid>
-
-      {showModal && (
-        <Modal
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setShowModal(false)}
-        >
-          <ModalContent
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
+          <button type="submit" className="sr-only">Search</button>
+        </form>
+        
+        <div className="filters">
+          <div className="filter-group">
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              className="text-sm border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <select
+              value={filters.sortBy}
+              onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+              className="text-sm border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="name">Sort by Name</option>
+              <option value="createdAt">Sort by Date</option>
+              <option value="productCount">Sort by Products</option>
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <button
+              onClick={() => setFilters(prev => ({ 
+                ...prev, 
+                sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc' 
+              }))}
+              className="p-2 text-gray-600 hover:bg-gray-100 rounded-md"
+              title={filters.sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'}
+            >
+              {filters.sortOrder === 'asc' ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+          
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            className="ml-auto"
+            icon={<RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />}
           >
-            <h3>{editingCategory ? 'Edit Category' : 'Add New Category'}</h3>
-            
-            <form onSubmit={handleSubmit}>
-              <FormGroup>
-                <label htmlFor="name">Category Name *</label>
-                <input
-                  type="text"
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter category name"
-                  required
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <label htmlFor="description">Description</label>
-                <textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Enter category description"
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <label htmlFor="parent">Parent Category</label>
-                <select
-                  id="parent"
-                  value={formData.parent}
-                  onChange={(e) => setFormData(prev => ({ ...prev, parent: e.target.value }))}
-                >
-                  <option value="">No Parent (Root Category)</option>
-                  {categories?.filter(cat => cat._id !== editingCategory?._id).map(category => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </FormGroup>
-
-              <FormGroup>
-                <label htmlFor="image">Category Image</label>
-                <input
-                  type="file"
-                  id="image"
-                  accept="image/*"
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.files[0] }))}
-                />
-              </FormGroup>
-
-              <ModalActions>
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() => {
-                    setShowModal(false);
-                    resetForm();
+            Refresh
+          </Button>
+        </div>
+      </SearchAndFilter>
+      
+      {/* Categories Grid */}
+      {categoriesData?.data?.length > 0 ? (
+        <>
+          <CategoriesGrid>
+            <AnimatePresence>
+              {categoriesData.data.map((category) => (
+                <CategoryCard
+                  key={category._id}
+                  category={{
+                    ...category,
+                    subcategoriesCount: category.subcategories?.length || 0
                   }}
-                >
-                  Cancel
-                </button>
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onViewSubcategories={handleViewSubcategories}
+                />
+              ))}
+            </AnimatePresence>
+          </CategoriesGrid>
+          
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Pagination>
+              <div className="info">
+                Showing <span className="font-medium">{(page - 1) * limit + 1}</span> to{' '}
+                <span className="font-medium">
+                  {Math.min(page * limit, categoriesData.pagination.totalCount)}
+                </span>{' '}
+                of <span className="font-medium">{categoriesData.pagination.totalCount}</span> categories
+              </div>
+              
+              <div className="pagination-controls">
                 <button
-                  type="submit"
-                  className="primary"
-                  disabled={saveCategoryMutation.isLoading}
+                  onClick={() => handlePageChange(1)}
+                  disabled={!hasPrevPage}
+                  className="px-3 py-1 rounded"
                 >
-                  {saveCategoryMutation.isLoading ? 'Saving...' : (editingCategory ? 'Update' : 'Create')}
+                  «
                 </button>
-              </ModalActions>
-            </form>
-          </ModalContent>
-        </Modal>
+                
+                <button
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={!hasPrevPage}
+                  className="px-3 py-1 rounded"
+                >
+                  ‹
+                </button>
+                
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  // Show page numbers around current page
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (page <= 3) {
+                    pageNum = i + 1;
+                  } else if (page >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = page - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-1 rounded ${page === pageNum ? 'active' : ''}`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                
+                <button
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={!hasNextPage}
+                  className="px-3 py-1 rounded"
+                >
+                  ›
+                </button>
+                
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={!hasNextPage}
+                  className="px-3 py-1 rounded"
+                >
+                  »
+                </button>
+              </div>
+            </Pagination>
+          )}
+        </>
+      ) : (
+        <EmptyCategories 
+          onAddCategory={() => setIsFormOpen(true)}
+          isFiltered={filters.status !== 'all' || filters.search}
+        />
       )}
-    </CategoriesContainer>
+      
+      {/* Mobile Floating Action Button */}
+      <MobileFloatingButton
+        onClick={() => {
+          setSelectedCategory(null);
+          setIsFormOpen(true);
+        }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Plus />
+      </MobileFloatingButton>
+      
+      {/* Add/Edit Category Modal */}
+      <Modal
+        isOpen={isFormOpen}
+        onClose={() => {
+          setIsFormOpen(false);
+          setSelectedCategory(null);
+        }}
+        title={selectedCategory ? 'Edit Category' : 'Add New Category'}
+        size="lg"
+      >
+        <CategoryForm
+          category={selectedCategory}
+          parentId={parentId}
+          onSuccess={handleFormSuccess}
+          onCancel={() => {
+            setIsFormOpen(false);
+            setSelectedCategory(null);
+          }}
+        />
+      </Modal>
+    </Container>
   );
 };
 

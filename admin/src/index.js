@@ -8,7 +8,7 @@ import App from './App';
 import './index.css';
 
 // Configure axios base URL
-axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://aurafix-backend.onrender.com';
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const queryClient = new QueryClient({
   defaultOptions: {

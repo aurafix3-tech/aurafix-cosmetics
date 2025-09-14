@@ -276,13 +276,29 @@ const Checkout = () => {
         }
       }
 
-      const orderData = {
-        items: items.map(item => ({
-          product: item.product._id,
+      // Debug cart items structure
+      console.log('Cart items before mapping:', items);
+      items.forEach((item, index) => {
+        console.log(`Item ${index}:`, {
+          product: item.product,
+          productId: item.product?._id,
           variant: item.variant,
           quantity: item.quantity,
           price: item.price
-        })),
+        });
+      });
+
+      const orderData = {
+        items: items.map(item => {
+          const mappedItem = {
+            product: item.product?._id || item.product?.id || item.product,
+            variant: item.variant,
+            quantity: item.quantity,
+            price: item.price
+          };
+          console.log('Mapped item:', mappedItem);
+          return mappedItem;
+        }),
         shippingAddress: {
           firstName: data.firstName,
           lastName: data.lastName,

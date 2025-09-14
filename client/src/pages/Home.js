@@ -1,13 +1,10 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Sparkles, ShoppingBag } from 'lucide-react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Float, Text3D, Environment } from '@react-three/drei';
 import { useQuery } from 'react-query';
 import axios from 'axios';
-import Product3DViewer from '../components/3D/Product3DViewer';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 import { useCartStore } from '../store/cartStore';
 
@@ -118,9 +115,12 @@ const SecondaryButton = styled(Link)`
   }
 `;
 
-const Hero3D = styled.div`
+const HeroImage = styled.div`
   height: 500px;
   position: relative;
+  background: url('https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80') center/cover;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 
   @media (max-width: 768px) {
     height: 300px;
@@ -271,58 +271,6 @@ const AddToCartButton = styled(motion.button)`
   gap: 8px;
 `;
 
-// 3D Scene Component
-const Hero3DScene = () => {
-  return (
-    <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
-      <Suspense fallback={null}>
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1} />
-        <Environment preset="sunset" />
-        
-        <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-          <mesh position={[0, 0, 0]}>
-            <sphereGeometry args={[1, 32, 32]} />
-            <meshPhysicalMaterial
-              color="#ff6b6b"
-              metalness={0.1}
-              roughness={0.2}
-              transmission={0.8}
-              thickness={0.5}
-              clearcoat={1}
-            />
-          </mesh>
-        </Float>
-
-        <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.3}>
-          <mesh position={[3, 1, -2]}>
-            <cylinderGeometry args={[0.5, 0.5, 2, 32]} />
-            <meshPhysicalMaterial
-              color="#4ecdc4"
-              metalness={0.2}
-              roughness={0.1}
-              transmission={0.9}
-            />
-          </mesh>
-        </Float>
-
-        <Float speed={2.5} rotationIntensity={0.7} floatIntensity={0.7}>
-          <mesh position={[-3, -1, -1]}>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshPhysicalMaterial
-              color="#45b7d1"
-              metalness={0.3}
-              roughness={0.1}
-              clearcoat={1}
-            />
-          </mesh>
-        </Float>
-
-        <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={1} />
-      </Suspense>
-    </Canvas>
-  );
-};
 
 const Home = () => {
   const { addItem } = useCartStore();
@@ -335,8 +283,8 @@ const Home = () => {
     },
     {
       icon: <Star size={32} />,
-      title: "3D Product View",
-      description: "Experience products like never before with our immersive 3D visualization technology."
+      title: "Expert Curation",
+      description: "Our beauty experts carefully select each product to ensure you get the best quality cosmetics."
     },
     {
       icon: <ShoppingBag size={32} />,
@@ -405,8 +353,8 @@ const Home = () => {
             <HeroText>
               <h1>Discover Your Perfect Beauty</h1>
               <p>
-                Experience luxury cosmetics with cutting-edge 3D technology. 
-                Explore, visualize, and find products that enhance your natural radiance.
+                Experience luxury cosmetics with premium quality products. 
+                Explore and find products that enhance your natural radiance.
               </p>
               <HeroButtons>
                 <PrimaryButton to="/products">
@@ -424,9 +372,7 @@ const Home = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <Hero3D>
-              <Hero3DScene />
-            </Hero3D>
+            <HeroImage />
           </motion.div>
         </HeroContent>
       </HeroSection>
@@ -482,17 +428,17 @@ const Home = () => {
                   transition={{ duration: 0.6, delay: index * 0.2 }}
                   viewport={{ once: true }}
                 >
-                  <div style={{ height: '250px' }}>
-                    <Product3DViewer 
-                      product={product} 
-                      height="250px"
-                      showControls={false}
-                    />
-                  </div>
+                  <div style={{ 
+                    height: '250px',
+                    background: product.images?.[0]?.url ? `url(${product.images[0].url})` : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    borderRadius: '20px 20px 0 0'
+                  }} />
                   <ProductInfo>
                     <h3>{product.name}</h3>
                     <p>{product.shortDescription || product.description}</p>
-                    <div className="price">${product.price}</div>
+                    <div className="price">KSH {product.price}</div>
                     <AddToCartButton
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}

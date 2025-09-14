@@ -79,7 +79,9 @@ const Thumbnail = styled.button`
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: scale-down;
+    object-position: center;
+    background-color: #f8f9fa;
   }
 
   &:hover {

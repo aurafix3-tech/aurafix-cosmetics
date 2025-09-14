@@ -14,16 +14,22 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 
-const NavContainer = styled.nav`
+const NavbarContainer = styled.nav`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  width: 100%;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  padding: 0 20px;
+  transition: all 0.3s ease;
+  
+  @media (max-width: 768px) {
+    padding: 0;
+    margin: 0;
+  }
 `;
 
 const NavContent = styled.div`
@@ -33,6 +39,14 @@ const NavContent = styled.div`
   align-items: center;
   justify-content: space-between;
   height: 80px;
+  padding: 0 1rem;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    padding: 0 0.5rem;
+    height: 70px;
+    max-width: 100%;
+  }
 `;
 
 const Logo = styled(Link)`
@@ -180,26 +194,56 @@ const MobileMenu = styled(motion.div)`
   top: 80px;
   left: 0;
   right: 0;
-  background: white;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+  padding: 0;
   display: none;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 
   @media (max-width: 768px) {
     display: block;
   }
 `;
 
-const MobileNavLink = styled(Link)`
+const MobileNavLink = styled(motion(Link))`
   display: block;
-  padding: 12px 0;
+  padding: 20px 24px;
   text-decoration: none;
   color: #333;
-  font-weight: 500;
-  border-bottom: 1px solid #f0f0f0;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+  position: relative;
+  transition: all 0.3s ease;
+  background: linear-gradient(90deg, transparent 0%, rgba(102, 126, 234, 0.05) 0%);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+
+  &:hover {
+    color: #667eea;
+    background-size: 100% 100%;
+    padding-left: 32px;
+  }
 
   &:last-child {
     border-bottom: none;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+  }
+
+  &:hover::before {
+    transform: scaleY(1);
   }
 `;
 
@@ -258,7 +302,7 @@ const Navbar = () => {
   };
 
   return (
-    <NavContainer>
+    <NavbarContainer>
       <NavContent>
         <Logo to="/">AuraFix</Logo>
         
@@ -342,37 +386,95 @@ const Navbar = () => {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <MobileMenu
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, height: 0, y: -20 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -20 }}
+            transition={{ 
+              duration: 0.4, 
+              ease: [0.4, 0, 0.2, 1],
+              staggerChildren: 0.1
+            }}
           >
-            <MobileNavLink to="/" onClick={() => setIsMobileMenuOpen(false)}>
-              Home
-            </MobileNavLink>
-            <MobileNavLink to="/products" onClick={() => setIsMobileMenuOpen(false)}>
-              Products
-            </MobileNavLink>
-            <MobileNavLink to="/about" onClick={() => setIsMobileMenuOpen(false)}>
-              About
-            </MobileNavLink>
-            <MobileNavLink to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
-              Contact
-            </MobileNavLink>
-            {!isAuthenticated && (
-              <>
-                <MobileNavLink to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  Login
-                </MobileNavLink>
-                <MobileNavLink to="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                  Register
-                </MobileNavLink>
-              </>
-            )}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <MobileNavLink 
+                to="/" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                🏠 Home
+              </MobileNavLink>
+              <MobileNavLink 
+                to="/products" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                💄 Products
+              </MobileNavLink>
+              <MobileNavLink 
+                to="/about" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                ℹ️ About
+              </MobileNavLink>
+              <MobileNavLink 
+                to="/contact" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                📞 Contact
+              </MobileNavLink>
+              {!isAuthenticated && (
+                <>
+                  <MobileNavLink 
+                    to="/login" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    🔐 Login
+                  </MobileNavLink>
+                  <MobileNavLink 
+                    to="/register" 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    📝 Register
+                  </MobileNavLink>
+                </>
+              )}
+            </motion.div>
           </MobileMenu>
         )}
       </AnimatePresence>
-    </NavContainer>
+    </NavbarContainer>
   );
 };
 

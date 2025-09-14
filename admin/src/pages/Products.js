@@ -13,13 +13,16 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  Star
+  Star,
+  Grid,
+  List
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
+import ProductCard from '../components/UI/ProductCard';
 
 const ProductsContainer = styled.div`
   display: flex;
@@ -29,13 +32,14 @@ const ProductsContainer = styled.div`
 
 const PageHeader = styled.div`
   display: flex;
-  justify-content: between;
+  justify-content: space-between;
   align-items: center;
   gap: 16px;
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .header-left {
@@ -46,6 +50,10 @@ const PageHeader = styled.div`
       font-weight: 700;
       color: #1f2937;
       margin-bottom: 8px;
+      
+      @media (max-width: 768px) {
+        font-size: 1.5rem;
+      }
     }
 
     p {
@@ -56,6 +64,11 @@ const PageHeader = styled.div`
   .header-actions {
     display: flex;
     gap: 12px;
+    
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: stretch;
+    }
   }
 `;
 
@@ -69,6 +82,14 @@ const ActionButton = styled(motion.button)`
   align-items: center;
   gap: 8px;
   font-size: 14px;
+  min-height: 44px;
+
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    font-size: 14px;
+    flex: 1;
+    justify-content: center;
+  }
 
   &.primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -114,6 +135,10 @@ const SearchInput = styled.div`
   flex: 1;
   min-width: 250px;
 
+  @media (max-width: 768px) {
+    min-width: 100%;
+  }
+
   input {
     width: 100%;
     padding: 10px 16px 10px 40px;
@@ -124,6 +149,11 @@ const SearchInput = styled.div`
 
     &:focus {
       border-color: #667eea;
+    }
+
+    @media (max-width: 768px) {
+      padding: 12px 16px 12px 40px;
+      font-size: 16px;
     }
   }
 
@@ -155,43 +185,191 @@ const ProductsGrid = styled.div`
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  
+  @media (max-width: 768px) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+`;
+
+const ProductsCardGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+`;
+
+const ViewToggle = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+`;
+
+const ViewButton = styled.button`
+  padding: 8px 12px;
+  border: 2px solid #e5e7eb;
+  background: ${props => props.$active ? '#667eea' : 'white'};
+  color: ${props => props.$active ? 'white' : '#6b7280'};
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  min-height: 36px;
+  
+  &:hover {
+    border-color: #667eea;
+    color: ${props => props.$active ? 'white' : '#667eea'};
+  }
+  
+  @media (max-width: 768px) {
+    padding: 10px;
+    min-width: 44px;
+    justify-content: center;
+    
+    span {
+      display: none;
+    }
+  }
 `;
 
 const ProductsTable = styled.table`
   width: 100%;
   border-collapse: collapse;
+  min-width: 800px;
+
+  @media (max-width: 768px) {
+    min-width: 1000px;
+  }
+
+  th, td {
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+    
+    /* Product column */
+    &:nth-child(1) {
+      width: 35%;
+      min-width: 280px;
+      padding: 16px 12px;
+    }
+    
+    /* Category column */
+    &:nth-child(2) {
+      width: 12%;
+      min-width: 100px;
+      padding: 16px 8px;
+    }
+    
+    /* Price column */
+    &:nth-child(3) {
+      width: 10%;
+      min-width: 80px;
+      padding: 16px 8px;
+    }
+    
+    /* Stock column */
+    &:nth-child(4) {
+      width: 15%;
+      min-width: 120px;
+      padding: 16px 8px;
+    }
+    
+    /* Status column */
+    &:nth-child(5) {
+      width: 12%;
+      min-width: 100px;
+      padding: 16px 8px;
+    }
+    
+    /* Featured column */
+    &:nth-child(6) {
+      width: 8%;
+      min-width: 60px;
+      padding: 16px 8px;
+      text-align: center;
+    }
+    
+    /* Actions column */
+    &:nth-child(7) {
+      width: 8%;
+      min-width: 60px;
+      padding: 16px 8px;
+      text-align: center;
+    }
+    
+    @media (max-width: 768px) {
+      font-size: 12px;
+      
+      &:nth-child(1) {
+        min-width: 250px;
+        padding: 12px 8px;
+      }
+      
+      &:nth-child(2), &:nth-child(3), &:nth-child(4), &:nth-child(5) {
+        min-width: 90px;
+        padding: 12px 6px;
+      }
+      
+      &:nth-child(6), &:nth-child(7) {
+        min-width: 50px;
+        padding: 12px 4px;
+      }
+    }
+  }
 
   th {
-    background: #f8fafc;
-    padding: 16px;
-    text-align: left;
+    background: #f9fafb;
     font-weight: 600;
     color: #374151;
-    border-bottom: 1px solid #e5e7eb;
     font-size: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    @media (max-width: 768px) {
+      font-size: 11px;
+    }
   }
 
   td {
-    padding: 16px;
-    border-bottom: 1px solid #f3f4f6;
     color: #6b7280;
     font-size: 14px;
   }
 
-  tr:hover {
-    background: #f9fafb;
+  tbody tr {
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: #f9fafb;
+    }
   }
 `;
 
 const ProductImage = styled.div`
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   border-radius: 8px;
   background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  flex-shrink: 0;
 
   img {
     width: 100%;
@@ -202,35 +380,67 @@ const ProductImage = styled.div`
   .placeholder {
     color: #9ca3af;
   }
+
+  @media (max-width: 768px) {
+    width: 50px;
+    height: 50px;
+  }
 `;
 
 const ProductInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  flex: 1;
+  width: 100%;
 
   .product-details {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    
     .product-name {
       font-weight: 600;
       color: #1f2937;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
+      font-size: 14px;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      
+      @media (max-width: 768px) {
+        font-size: 12px;
+        line-height: 1.2;
+      }
     }
 
     .product-sku {
       font-size: 12px;
       color: #9ca3af;
+      
+      @media (max-width: 768px) {
+        font-size: 11px;
+      }
     }
   }
 `;
 
 const StatusBadge = styled.span`
-  padding: 4px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
 
   &.active {
     background: #dcfce7;
@@ -249,10 +459,19 @@ const StatusBadge = styled.span`
 `;
 
 const StockBadge = styled.span`
-  padding: 4px 8px;
+  padding: 6px 12px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+  text-align: center;
+  min-width: 60px;
+
+  @media (max-width: 768px) {
+    padding: 4px 8px;
+    font-size: 11px;
+    min-width: 50px;
+  }
 
   &.in-stock {
     background: #dcfce7;
@@ -271,52 +490,64 @@ const StockBadge = styled.span`
 `;
 
 const FeaturedToggle = styled.button`
-  background: none;
-  border: none;
   padding: 8px;
+  border: none;
+  background: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
 
   &.featured {
     color: #f59e0b;
-    background: #fef3c7;
-
-    &:hover {
-      background: #fde68a;
-    }
   }
 
   &.not-featured {
-    color: #9ca3af;
-    background: #f9fafb;
+    color: #d1d5db;
+  }
 
-    &:hover {
-      background: #f3f4f6;
-      color: #6b7280;
-    }
+  &:hover {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
   }
 `;
 
 const ActionMenu = styled.div`
   position: relative;
-  display: inline-block;
 
   .menu-button {
-    background: none;
-    border: none;
     padding: 8px;
+    border: none;
+    background: none;
     border-radius: 6px;
     cursor: pointer;
     color: #6b7280;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
 
     &:hover {
       background: #f3f4f6;
       color: #374151;
+    }
+
+    @media (max-width: 768px) {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 12px;
     }
   }
 
@@ -329,20 +560,32 @@ const ActionMenu = styled.div`
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     z-index: 10;
-    min-width: 150px;
+    min-width: 160px;
     overflow: hidden;
+    
+    @media (max-width: 768px) {
+      min-width: 140px;
+      right: -10px;
+    }
   }
 
   .menu-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
+    gap: 10px;
+    padding: 14px 16px;
     color: #374151;
     text-decoration: none;
     font-size: 14px;
     cursor: pointer;
     transition: background 0.3s ease;
+    min-height: 44px;
+
+    @media (max-width: 768px) {
+      padding: 12px 14px;
+      font-size: 13px;
+      gap: 8px;
+    }
 
     &:hover {
       background: #f9fafb;
@@ -408,6 +651,7 @@ const Products = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [viewMode, setViewMode] = useState('table'); // 'table' or 'cards'
   
   const queryClient = useQueryClient();
 
@@ -500,6 +744,22 @@ const Products = () => {
           <p>Manage your product catalog</p>
         </div>
         <div className="header-actions">
+          <ViewToggle>
+            <ViewButton 
+              $active={viewMode === 'table'} 
+              onClick={() => setViewMode('table')}
+            >
+              <List size={16} />
+              <span>Table</span>
+            </ViewButton>
+            <ViewButton 
+              $active={viewMode === 'cards'} 
+              onClick={() => setViewMode('cards')}
+            >
+              <Grid size={16} />
+              <span>Cards</span>
+            </ViewButton>
+          </ViewToggle>
           <ActionButton className="secondary">
             <Filter size={16} />
             Export
@@ -551,52 +811,62 @@ const Products = () => {
         </FilterSelect>
       </FiltersCard>
 
-      <ProductsGrid>
-        <ProductsTable>
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Status</th>
-              <th>Featured</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product._id}>
-                <td>
-                  <ProductInfo>
-                    <ProductImage>
-                      {product.images?.[0] ? (
-                        <img src={product.images[0]} alt={product.name} />
-                      ) : (
-                        <Package size={20} className="placeholder" />
-                      )}
-                    </ProductImage>
-                    <div className="product-details">
-                      <div className="product-name">{product.name}</div>
-                      <div className="product-sku">SKU: {product.sku}</div>
-                    </div>
-                  </ProductInfo>
-                </td>
-                <td>{product.category?.name || 'Uncategorized'}</td>
-                <td>${product.price}</td>
-                <td>
-                  <StockBadge className={getStockStatus(product.stock)}>
-                    {getStockLabel(product.stock)} ({product.stock})
-                  </StockBadge>
-                </td>
-                <td>
-                  <StatusBadge className={product.status}>
-                    {product.status === 'active' && <CheckCircle size={12} />}
-                    {product.status === 'inactive' && <XCircle size={12} />}
-                    {product.status === 'draft' && <AlertCircle size={12} />}
-                    {product.status ? product.status.charAt(0).toUpperCase() + product.status.slice(1) : 'Unknown'}
-                  </StatusBadge>
-                </td>
+      {viewMode === 'cards' ? (
+        <ProductsCardGrid>
+          {products.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              onDelete={handleDelete}
+              onToggleFeatured={(productId) => handleToggleFeatured(productId, product.isFeatured)}
+            />
+          ))}
+        </ProductsCardGrid>
+      ) : (
+        <ProductsGrid>
+          <ProductsTable>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Featured</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product._id}>
+                  <td>
+                    <ProductInfo>
+                      <ProductImage>
+                        {product.images?.[0] ? (
+                          <img src={product.images[0]} alt={product.name} />
+                        ) : (
+                          <Package size={20} className="placeholder" />
+                        )}
+                      </ProductImage>
+                      <div className="product-details">
+                        <div className="product-name">{product.name}</div>
+                        <div className="product-sku">SKU: {product.sku}</div>
+                      </div>
+                    </ProductInfo>
+                  </td>
+                  <td>{product.category?.name || 'Uncategorized'}</td>
+                  <td>KES {product.price}</td>
+                  <td>
+                    <StockBadge className={getStockStatus(product.stock)}>
+                      {getStockLabel(product.stock)} ({product.stock})
+                    </StockBadge>
+                  </td>
+                  <td>
+                    <StatusBadge className={product.isActive ? 'active' : 'inactive'}>
+                      {product.isActive ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                      {product.isActive ? 'Active' : 'Inactive'}
+                    </StatusBadge>
+                  </td>
                 <td>
                   <FeaturedToggle
                     className={product.isFeatured ? 'featured' : 'not-featured'}
@@ -670,7 +940,40 @@ const Products = () => {
             </button>
           </div>
         </Pagination>
-      </ProductsGrid>
+        </ProductsGrid>
+      )}
+
+      {/* Pagination for both views */}
+      <Pagination>
+        <div className="pagination-info">
+          Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, productsData?.total || 0)} of {productsData?.total || 0} products
+        </div>
+        <div className="pagination-controls">
+          <button
+            className="pagination-button"
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <button
+              key={page}
+              className={`pagination-button ${currentPage === page ? 'active' : ''}`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            className="pagination-button"
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      </Pagination>
     </ProductsContainer>
   );
 };

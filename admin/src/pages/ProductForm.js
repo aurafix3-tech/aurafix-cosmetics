@@ -30,6 +30,11 @@ const PageHeader = styled.div`
   align-items: center;
   gap: 16px;
 
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
   .back-button {
     background: none;
     border: none;
@@ -38,6 +43,8 @@ const PageHeader = styled.div`
     cursor: pointer;
     color: #6b7280;
     transition: all 0.3s ease;
+    min-height: 44px;
+    min-width: 44px;
 
     &:hover {
       background: #f3f4f6;
@@ -49,6 +56,10 @@ const PageHeader = styled.div`
     font-size: 2rem;
     font-weight: 700;
     color: #1f2937;
+    
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
   }
 `;
 
@@ -68,11 +79,20 @@ const FormCard = styled.div`
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+
   h3 {
     font-size: 1.25rem;
     font-weight: 600;
     color: #1f2937;
     margin-bottom: 20px;
+    
+    @media (max-width: 768px) {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+    }
   }
 `;
 
@@ -95,6 +115,12 @@ const FormGroup = styled.div`
     outline: none;
     transition: border-color 0.3s ease;
     font-size: 14px;
+
+    @media (max-width: 768px) {
+      padding: 14px 16px;
+      font-size: 16px;
+      min-height: 44px;
+    }
 
     &:focus {
       border-color: #667eea;
@@ -273,6 +299,7 @@ const ActionButtons = styled.div`
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+  margin-top: 32px;
   padding-top: 24px;
   border-top: 1px solid #e5e7eb;
 
@@ -285,26 +312,42 @@ const ActionButtons = styled.div`
     display: flex;
     align-items: center;
     gap: 8px;
-
-    &.secondary {
-      background: white;
-      color: #374151;
-      border: 2px solid #e5e7eb;
-
-      &:hover {
-        border-color: #d1d5db;
-        background: #f9fafb;
-      }
-    }
+    border: none;
 
     &.primary {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      border: none;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    &.secondary {
+      background: white;
+      color: #6b7280;
+      border: 2px solid #e5e7eb;
 
       &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        border-color: #d1d5db;
+        color: #374151;
+      }
+    }
+
+    &.danger {
+      background: #ef4444;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
       }
 
       &:disabled {
@@ -423,6 +466,24 @@ const ProductForm = () => {
         }
       });
 
+      // Add images to delete
+      if (productData.imagesToDelete && productData.imagesToDelete.length > 0) {
+        // Filter out any invalid entries and ensure proper serialization
+        const validImagesToDelete = productData.imagesToDelete.filter(img => 
+          img && typeof img === 'object' && img.url
+        );
+        console.log('Frontend - imagesToDelete before sending:', validImagesToDelete);
+        if (validImagesToDelete.length > 0) {
+          formDataToSend.append('imagesToDelete', JSON.stringify(validImagesToDelete));
+        }
+      }
+
+      // Add remaining existing images
+      const existingImages = images.filter(img => !(img instanceof File));
+      if (existingImages.length > 0) {
+        formDataToSend.append('existingImages', JSON.stringify(existingImages));
+      }
+
       // Add 3D model
       if (model3D instanceof File) {
         formDataToSend.append('model3D', model3D);
@@ -446,6 +507,22 @@ const ProductForm = () => {
       },
       onError: (error) => {
         toast.error(error.response?.data?.message || `Failed to ${isEdit ? 'update' : 'create'} product`);
+      }
+    }
+  );
+
+  const deleteProductMutation = useMutation(
+    async (productId) => {
+      return await axios.delete(`/api/products/${productId}`);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('products');
+        toast.success('Product deleted successfully');
+        navigate('/products');
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Failed to delete product');
       }
     }
   );
@@ -506,6 +583,24 @@ const ProductForm = () => {
   };
 
   const removeImage = (index) => {
+    const imageToRemove = images[index];
+    
+    // If it's an existing image (not a File), we need to track it for deletion
+    if (!(imageToRemove instanceof File) && imageToRemove && typeof imageToRemove === 'object' && imageToRemove.url) {
+      // Create a clean copy to avoid circular references
+      const cleanImage = {
+        url: imageToRemove.url,
+        alt: imageToRemove.alt,
+        isPrimary: imageToRemove.isPrimary,
+        _id: imageToRemove._id
+      };
+      
+      setFormData(prev => ({
+        ...prev,
+        imagesToDelete: [...(prev.imagesToDelete || []), cleanImage]
+      }));
+    }
+    
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -894,6 +989,21 @@ const ProductForm = () => {
           <button type="button" className="secondary" onClick={() => navigate('/products')}>
             Cancel
           </button>
+          {isEdit && (
+            <button 
+              type="button" 
+              className="danger"
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+                  deleteProductMutation.mutate(id);
+                }
+              }}
+              disabled={deleteProductMutation.isLoading}
+            >
+              <Trash2 size={16} />
+              {deleteProductMutation.isLoading ? 'Deleting...' : 'Delete Product'}
+            </button>
+          )}
           <button 
             type="submit" 
             className="primary"

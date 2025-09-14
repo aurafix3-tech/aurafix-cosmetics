@@ -12,7 +12,8 @@ import {
   Settings,
   Menu,
   X,
-  Sparkles
+  Sparkles,
+  Image
 } from 'lucide-react';
 
 const SidebarContainer = styled(motion.aside)`
@@ -30,6 +31,7 @@ const SidebarContainer = styled(motion.aside)`
   @media (max-width: 768px) {
     width: ${props => props.collapsed ? '0' : '280px'};
     transform: translateX(${props => props.collapsed ? '-100%' : '0'});
+    box-shadow: ${props => props.collapsed ? 'none' : '2px 0 10px rgba(0,0,0,0.3)'};
   }
 `;
 
@@ -73,6 +75,11 @@ const ToggleButton = styled.button`
   padding: 8px;
   border-radius: 6px;
   transition: background 0.3s ease;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background: rgba(255, 255, 255, 0.1);
@@ -93,6 +100,7 @@ const NavItem = styled(Link)`
   transition: all 0.3s ease;
   position: relative;
   font-weight: 500;
+  min-height: 48px;
 
   &:hover {
     color: #667eea;
@@ -120,9 +128,14 @@ const NavItem = styled(Link)`
     transition: opacity 0.3s ease;
     white-space: nowrap;
   }
+
+  @media (max-width: 768px) {
+    padding: 16px 24px;
+    min-height: 52px;
+  }
 `;
 
-const Sidebar = ({ collapsed, onToggle }) => {
+const Sidebar = ({ collapsed, isMobile, onToggle }) => {
   const location = useLocation();
 
   const navItems = [
@@ -131,6 +144,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     { path: '/categories', icon: FolderTree, label: 'Categories' },
     { path: '/orders', icon: ShoppingCart, label: 'Orders' },
     { path: '/users', icon: Users, label: 'Users' },
+    { path: '/backgrounds', icon: Image, label: 'Page Backgrounds' },
     { path: '/analytics', icon: BarChart3, label: 'Analytics' },
     { path: '/settings', icon: Settings, label: 'Settings' },
   ];
@@ -166,6 +180,12 @@ const Sidebar = ({ collapsed, onToggle }) => {
               to={item.path}
               active={isActive}
               collapsed={collapsed}
+              onClick={() => {
+                // Close sidebar on mobile after navigation
+                if (isMobile) {
+                  onToggle();
+                }
+              }}
             >
               <Icon size={20} className="icon" />
               <span className="text">{item.label}</span>

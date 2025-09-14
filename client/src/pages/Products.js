@@ -9,7 +9,9 @@ import {
   Star, 
   Heart,
   ShoppingBag,
-  ChevronDown
+  ChevronDown,
+  Square,
+  Columns
 } from 'lucide-react';
 import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -22,7 +24,18 @@ import { useAuthStore } from '../store/authStore';
 const ProductsContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 2rem;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    padding: 1rem 0.5rem;
+    margin: 0;
+    max-width: 100%;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 16px 12px;
+  }
 `;
 
 const Header = styled.div`
@@ -41,6 +54,24 @@ const Header = styled.div`
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 24px;
+    
+    h1 {
+      font-size: 2rem;
+      text-align: center;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 1.75rem;
+    }
+  }
 `;
 
 const Controls = styled.div`
@@ -48,6 +79,37 @@ const Controls = styled.div`
   gap: 16px;
   align-items: center;
   flex-wrap: wrap;
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+    gap: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+`;
+
+const FiltersSection = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 0.5rem;
+    margin: 0 0 1rem 0;
+    border-radius: 8px;
+  }
 `;
 
 const SearchBox = styled.div`
@@ -60,17 +122,21 @@ const SearchInput = styled.input`
   padding: 12px 40px 12px 16px;
   border: 2px solid #e1e5e9;
   border-radius: 25px;
-  outline: none;
+  font-size: 16px;
   width: 300px;
   transition: all 0.3s ease;
 
   &:focus {
+    outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
   @media (max-width: 768px) {
-    width: 200px;
+    width: 100%;
+    padding: 10px 35px 10px 14px;
+    font-size: 14px;
+    max-width: 100%;
   }
 `;
 
@@ -113,16 +179,30 @@ const ViewToggle = styled.div`
   background: #f8f9fa;
   border-radius: 8px;
   padding: 4px;
+  
+  @media (max-width: 768px) {
+    order: -1;
+    margin-bottom: 16px;
+  }
 `;
 
 const ViewButton = styled.button`
   padding: 8px 12px;
-  background: ${props => props.active ? '#667eea' : 'transparent'};
-  color: ${props => props.active ? 'white' : '#666'};
+  background: ${props => props.$active ? '#667eea' : 'transparent'};
+  color: ${props => props.$active ? 'white' : '#666'};
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  
+  @media (max-width: 768px) {
+    padding: 10px 16px;
+    font-size: 12px;
+  }
 `;
 
 const FiltersPanel = styled(motion.div)`
@@ -185,21 +265,47 @@ const PriceRange = styled.div`
 
 const ProductsGrid = styled.div`
   display: grid;
-  grid-template-columns: ${props => 
-    props.view === 'grid' 
-      ? 'repeat(auto-fill, minmax(300px, 1fr))' 
-      : '1fr'
-  };
-  gap: 32px;
+  grid-template-columns: ${props => {
+    if (props.view === 'single') return '1fr';
+    if (props.view === 'double') return 'repeat(2, 1fr)';
+    return 'repeat(auto-fill, minmax(280px, 1fr))';
+  }};
+  gap: ${props => props.view === 'single' ? '24px' : '20px'};
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: ${props => {
+      if (props.view === 'single') return '1fr';
+      if (props.view === 'double') return 'repeat(2, 1fr)';
+      return 'repeat(auto-fill, minmax(160px, 1fr))';
+    }};
+    gap: 8px;
+    padding: 0;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: ${props => props.view === 'double' ? 'repeat(2, 1fr)' : '1fr'};
+    gap: 6px;
+  }
 `;
 
 const ProductCard = styled(motion.div)`
   background: white;
-  border-radius: 20px;
+  border-radius: ${props => props.view === 'single' ? '24px' : '16px'};
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   display: ${props => props.view === 'list' ? 'flex' : 'block'};
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    border-radius: ${props => props.view === 'single' ? '20px' : '12px'};
+    margin: 0;
+  }
+  
+  @media (max-width: 480px) {
+    border-radius: 12px;
+  }
   
   &:hover {
     transform: translateY(-8px);
@@ -208,21 +314,90 @@ const ProductCard = styled(motion.div)`
 `;
 
 const ProductImage = styled.div`
-  height: ${props => props.view === 'list' ? '200px' : '250px'};
+  height: ${props => {
+    if (props.view === 'list') return '200px';
+    if (props.view === 'single') return '400px';
+    if (props.view === 'double') return '250px';
+    return '300px';
+  }};
   width: ${props => props.view === 'list' ? '200px' : '100%'};
   flex-shrink: 0;
+  
+  @media (max-width: 768px) {
+    height: ${props => {
+      if (props.view === 'list') return '150px';
+      if (props.view === 'single') return '300px';
+      if (props.view === 'double') return '200px';
+      return '250px';
+    }};
+  }
+  
+  @media (max-width: 480px) {
+    height: ${props => {
+      if (props.view === 'list') return '120px';
+      if (props.view === 'single') return '250px';
+      if (props.view === 'double') return '150px';
+      return '200px';
+    }};
+  }
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
 `;
 
 const ProductInfo = styled.div`
-  padding: 24px;
+  padding: ${props => {
+    if (props.view === 'single') return '24px';
+    if (props.view === 'double') return '16px';
+    return '20px';
+  }};
   flex: 1;
+  
+  @media (max-width: 768px) {
+    padding: ${props => {
+      if (props.view === 'single') return '20px';
+      if (props.view === 'double') return '12px';
+      return '16px';
+    }};
+  }
+  
+  @media (max-width: 480px) {
+    padding: ${props => {
+      if (props.view === 'single') return '16px';
+      if (props.view === 'double') return '8px';
+      return '12px';
+    }};
+  }
 
   h3 {
-    font-size: 1.25rem;
+    font-size: ${props => {
+      if (props.view === 'single') return '1.5rem';
+      if (props.view === 'double') return '1rem';
+      return '1.2rem';
+    }};
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: ${props => props.view === 'single' ? '12px' : '8px'};
     color: #333;
+    
+    @media (max-width: 768px) {
+      font-size: ${props => {
+        if (props.view === 'single') return '1.3rem';
+        if (props.view === 'double') return '0.9rem';
+        return '1.1rem';
+      }};
+    }
+    
+    @media (max-width: 480px) {
+      font-size: ${props => {
+        if (props.view === 'single') return '1.2rem';
+        if (props.view === 'double') return '0.85rem';
+        return '1rem';
+      }};
+    }
   }
 
   p {
@@ -325,6 +500,7 @@ const Products = () => {
   console.log('Products component rendering - version 2.0'); // Debug log to force refresh
   const [searchParams, setSearchParams] = useSearchParams();
   const [view, setView] = useState('grid');
+  const [mobileView, setMobileView] = useState('single'); // single or double for mobile
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
@@ -336,7 +512,23 @@ const Products = () => {
     sortBy: searchParams.get('sortBy') || 'createdAt',
     sortOrder: searchParams.get('sortOrder') || 'desc'
   });
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
+
+  // Sync filters with URL params on mount and URL changes
+  useEffect(() => {
+    const newFilters = {
+      search: searchParams.get('search') || '',
+      category: searchParams.get('category') || '',
+      brand: searchParams.get('brand') || '',
+      minPrice: searchParams.get('minPrice') || '',
+      maxPrice: searchParams.get('maxPrice') || '',
+      skinType: searchParams.get('skinType') || '',
+      sortBy: searchParams.get('sortBy') || 'createdAt',
+      sortOrder: searchParams.get('sortOrder') || 'desc'
+    };
+    setFilters(newFilters);
+    setCurrentPage(parseInt(searchParams.get('page')) || 1);
+  }, [searchParams]);
 
   const { addItem } = useCartStore();
   const { user, addToWishlist, removeFromWishlist } = useAuthStore();
@@ -377,11 +569,24 @@ const Products = () => {
     setFilters(newFilters);
     setCurrentPage(1);
     
-    // Update URL params
+    // Update URL params with page reset
     const params = new URLSearchParams();
     Object.entries(newFilters).forEach(([k, v]) => {
       if (v) params.set(k, v);
     });
+    params.set('page', '1'); // Always reset to page 1 when filters change
+    setSearchParams(params);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    
+    // Update URL params with new page
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+    });
+    params.set('page', page.toString());
     setSearchParams(params);
   };
 
@@ -444,12 +649,28 @@ const Products = () => {
               onClick={() => setView('grid')}
             >
               <Grid size={16} />
+              <span className="desktop-only">Grid</span>
+            </ViewButton>
+            <ViewButton 
+              $active={view === 'single'} 
+              onClick={() => setView('single')}
+            >
+              <Square size={16} />
+              <span className="desktop-only">Single</span>
+            </ViewButton>
+            <ViewButton 
+              $active={view === 'double'} 
+              onClick={() => setView('double')}
+            >
+              <Columns size={16} />
+              <span className="desktop-only">Double</span>
             </ViewButton>
             <ViewButton 
               $active={view === 'list'} 
               onClick={() => setView('list')}
             >
               <List size={16} />
+              <span className="desktop-only">List</span>
             </ViewButton>
           </ViewToggle>
         </Controls>
@@ -633,13 +854,27 @@ const Products = () => {
                     <ProductImage view={view}>
                       {Array.isArray(product.images) && product.images.length > 0 ? (
                         <img
-                          src={typeof product.images[0] === 'object' ? product.images[0].url : product.images[0]}
+                          src={typeof product.images[0] === 'object' ? 
+                            (product.images[0].url.startsWith('http') ? 
+                              product.images[0].url : 
+                              `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${product.images[0].url}`
+                            ) : 
+                            (product.images[0].startsWith('http') ? 
+                              product.images[0] : 
+                              `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${product.images[0]}`
+                            )
+                          }
                           alt={productName}
                           style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            borderRadius: '8px'
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            width: 'auto',
+                            height: 'auto',
+                            objectFit: 'contain',
+                            borderRadius: '4px'
+                          }}
+                          onLoad={(e) => {
+                            console.log(`Image loaded: ${e.target.naturalWidth}x${e.target.naturalHeight}, displayed: ${e.target.width}x${e.target.height}`);
                           }}
                           onError={(e) => {
                             e.target.src = 'https://via.placeholder.com/400x400/f0f0f0/999999?text=No+Image';
@@ -661,7 +896,7 @@ const Products = () => {
                       )}
                     </ProductImage>
 
-                    <ProductInfo>
+                    <ProductInfo view={view}>
                       <h3>{productName}</h3>
                       <p>
                         {productDescription && productDescription.length > 100 
@@ -714,7 +949,7 @@ const Products = () => {
         <Pagination>
           <PageButton
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage(1)}
+            onClick={() => handlePageChange(1)}
             title="First page"
           >
             ««
@@ -722,7 +957,7 @@ const Products = () => {
           
           <PageButton
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage(currentPage - 1)}
+            onClick={() => handlePageChange(currentPage - 1)}
             title="Previous page"
           >
             ‹ Previous
@@ -759,7 +994,7 @@ const Products = () => {
                 <PageButton
                   key={page}
                   $active={currentPage === page}
-                  onClick={() => setCurrentPage(page)}
+                  onClick={() => handlePageChange(page)}
                   title={`Go to page ${page}`}
                 >
                   {page}
@@ -770,7 +1005,7 @@ const Products = () => {
           
           <PageButton
             disabled={currentPage === productsData.totalPages}
-            onClick={() => setCurrentPage(currentPage + 1)}
+            onClick={() => handlePageChange(currentPage + 1)}
             title="Next page"
           >
             Next ›
@@ -778,7 +1013,7 @@ const Products = () => {
           
           <PageButton
             disabled={currentPage === productsData.totalPages}
-            onClick={() => setCurrentPage(productsData.totalPages)}
+            onClick={() => handlePageChange(productsData.totalPages)}
             title="Last page"
           >
             »»

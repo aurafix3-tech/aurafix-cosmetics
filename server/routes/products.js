@@ -12,7 +12,12 @@ const router = express.Router();
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/products/');
+    const fs = require('fs');
+    const uploadDir = 'public/uploads/products/';
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
@@ -76,8 +81,6 @@ router.get('/', async (req, res) => {
     }
     if (featured === 'true') query.isFeatured = true;
 
-    console.log('MongoDB query:', JSON.stringify(query, null, 2));
-
     const options = {
       page: parseInt(page),
       limit: parseInt(limit),
@@ -87,18 +90,13 @@ router.get('/', async (req, res) => {
       ]
     };
 
-    console.log('Query options:', options);
-
     const products = await Product.find(query)
       .populate(options.populate)
       .sort(options.sort)
       .limit(options.limit * 1)
       .skip((options.page - 1) * options.limit);
 
-    console.log(`Found ${products.length} products`);
-
     const total = await Product.countDocuments(query);
-    console.log(`Total products matching query: ${total}`);
 
     const response = {
       products,
@@ -281,6 +279,9 @@ router.put('/:id', adminAuth, upload.fields([
     console.log('PUT /api/products/:id - Update product request received');
     console.log('Product ID:', req.params.id);
     console.log('Request body:', req.body);
+    console.log('imagesToDelete raw:', req.body.imagesToDelete);
+    console.log('imagesToDelete type:', typeof req.body.imagesToDelete);
+    console.log('imagesToDelete isArray:', Array.isArray(req.body.imagesToDelete));
 
     const product = await Product.findById(req.params.id);
     if (!product) {
@@ -319,15 +320,99 @@ router.put('/:id', adminAuth, upload.fields([
       }
     }
 
+    // Handle image deletion and existing images
+    let currentImages = product.images || [];
+    
+    // Handle images to delete
+    if (updates.imagesToDelete) {
+      try {
+        let imagesToDelete = [];
+        
+        // Handle case where imagesToDelete might be an array of strings or already parsed
+        if (Array.isArray(updates.imagesToDelete)) {
+          // Process each item in the array
+          updates.imagesToDelete.forEach(item => {
+            if (typeof item === 'string') {
+              // Skip [object Object] strings completely
+              if (item.includes('[object Object]') || item === '[object Object]') {
+                console.log('Skipping invalid [object Object] string:', item);
+                return;
+              }
+              // Try to parse JSON strings
+              if ((item.startsWith('[') && item.endsWith(']')) || (item.startsWith('{') && item.endsWith('}'))) {
+                try {
+                  const parsed = JSON.parse(item);
+                  if (Array.isArray(parsed)) {
+                    imagesToDelete.push(...parsed);
+                  } else if (parsed && typeof parsed === 'object' && parsed.url) {
+                    imagesToDelete.push(parsed);
+                  }
+                } catch (e) {
+                  console.error('Failed to parse individual image item:', item, e.message);
+                }
+              }
+            } else if (typeof item === 'object' && item && item.url) {
+              imagesToDelete.push(item);
+            }
+          });
+        } else if (typeof updates.imagesToDelete === 'string') {
+          // Skip if it's just [object Object]
+          if (!updates.imagesToDelete.includes('[object Object]')) {
+            try {
+              imagesToDelete = JSON.parse(updates.imagesToDelete);
+            } catch (e) {
+              console.error('Failed to parse imagesToDelete string:', updates.imagesToDelete);
+            }
+          } else {
+            console.log('Skipping imagesToDelete string containing [object Object]:', updates.imagesToDelete);
+          }
+        }
+        
+        console.log('Final processed imagesToDelete:', imagesToDelete);
+        
+        if (Array.isArray(imagesToDelete)) {
+          const fs = require('fs');
+          
+          imagesToDelete.forEach(imageToDelete => {
+            // Remove from filesystem if it's a local file
+            if (imageToDelete.url && imageToDelete.url.startsWith('/uploads/')) {
+              const filePath = path.join(__dirname, '..', 'public', imageToDelete.url);
+              if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+              }
+            }
+          });
+          
+          // Filter out deleted images
+          const deleteUrls = imagesToDelete.map(img => img.url);
+          currentImages = currentImages.filter(img => !deleteUrls.includes(img.url));
+        }
+      } catch (e) {
+        console.error('Error processing imagesToDelete:', e, 'Raw value:', updates.imagesToDelete);
+      }
+    }
+    
+    // Handle existing images (preserve order)
+    if (updates.existingImages) {
+      try {
+        const existingImages = JSON.parse(updates.existingImages);
+        currentImages = existingImages;
+      } catch (e) {
+        console.error('Error processing existingImages:', e);
+      }
+    }
+
     // Handle new image uploads
     if (req.files?.images) {
       const newImages = req.files.images.map((file, index) => ({
         url: `/uploads/products/${file.filename}`,
         alt: `${updates.name || product.name} image ${index + 1}`,
-        isPrimary: index === 0 && !product.images.length
+        isPrimary: index === 0 && currentImages.length === 0
       }));
-      updates.images = [...(product.images || []), ...newImages];
+      currentImages = [...currentImages, ...newImages];
     }
+    
+    updates.images = currentImages;
 
     // Handle 3D model upload
     if (req.files?.model3D) {
@@ -339,6 +424,13 @@ router.put('/:id', adminAuth, upload.fields([
     }
 
     console.log('Final updates before saving:', updates);
+
+    // Remove undefined fields to avoid validation issues
+    Object.keys(updates).forEach(key => {
+      if (updates[key] === undefined) {
+        delete updates[key];
+      }
+    });
 
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,

@@ -3,10 +3,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
+import GlobalStyles from './styles/GlobalStyles';
 
 // Components
 import Navbar from './components/Layout/Navbar';
 import Footer from './components/Layout/Footer';
+import PageWrapper from './components/Layout/PageWrapper';
 import LoadingSpinner from './components/UI/LoadingSpinner';
 import ErrorBoundary from './components/UI/ErrorBoundary';
 
@@ -29,11 +31,20 @@ const AppContainer = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  overflow-x: hidden;
 `;
 
 const MainContent = styled.main`
   flex: 1;
   padding-top: 80px; /* Account for fixed navbar */
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    padding-top: 70px;
+    padding-left: 0;
+    padding-right: 0;
+  }
 `;
 
 const pageVariants = {
@@ -57,6 +68,7 @@ function App() {
 
   return (
     <AppContainer>
+      <GlobalStyles />
       <Navbar />
       <MainContent>
         <ErrorBoundary>
@@ -66,29 +78,33 @@ function App() {
               <Route 
                 path="/" 
                 element={
-                  <motion.div
-                    initial="initial"
-                    animate="in"
-                    exit="out"
-                    variants={pageVariants}
-                    transition={pageTransition}
-                  >
-                    <Home />
-                  </motion.div>
+                  <PageWrapper pageName="home" loadingText="Welcome to AuraFix">
+                    <motion.div
+                      initial="initial"
+                      animate="in"
+                      exit="out"
+                      variants={pageVariants}
+                      transition={pageTransition}
+                    >
+                      <Home />
+                    </motion.div>
+                  </PageWrapper>
                 } 
               />
               <Route 
                 path="/products" 
                 element={
-                  <motion.div
-                    initial="initial"
-                    animate="in"
-                    exit="out"
-                    variants={pageVariants}
-                    transition={pageTransition}
-                  >
-                    <Products />
-                  </motion.div>
+                  <PageWrapper pageName="products" loadingText="Loading Products">
+                    <motion.div
+                      initial="initial"
+                      animate="in"
+                      exit="out"
+                      variants={pageVariants}
+                      transition={pageTransition}
+                    >
+                      <Products />
+                    </motion.div>
+                  </PageWrapper>
                 } 
               />
               <Route 
@@ -178,29 +194,33 @@ function App() {
               <Route 
                 path="/about" 
                 element={
-                  <motion.div
-                    initial="initial"
-                    animate="in"
-                    exit="out"
-                    variants={pageVariants}
-                    transition={pageTransition}
-                  >
-                    <About />
-                  </motion.div>
+                  <PageWrapper pageName="about" loadingText="About AuraFix">
+                    <motion.div
+                      initial="initial"
+                      animate="in"
+                      exit="out"
+                      variants={pageVariants}
+                      transition={pageTransition}
+                    >
+                      <About />
+                    </motion.div>
+                  </PageWrapper>
                 } 
               />
               <Route 
                 path="/contact" 
                 element={
-                  <motion.div
-                    initial="initial"
-                    animate="in"
-                    exit="out"
-                    variants={pageVariants}
-                    transition={pageTransition}
-                  >
-                    <Contact />
-                  </motion.div>
+                  <PageWrapper pageName="contact" loadingText="Get in Touch">
+                    <motion.div
+                      initial="initial"
+                      animate="in"
+                      exit="out"
+                      variants={pageVariants}
+                      transition={pageTransition}
+                    >
+                      <Contact />
+                    </motion.div>
+                  </PageWrapper>
                 } 
               />
             </Routes>

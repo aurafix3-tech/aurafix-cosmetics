@@ -9,32 +9,105 @@ const router = express.Router();
 // Create order
 router.post('/', auth, [
   body('items').isArray({ min: 1 }).withMessage('Order must contain at least one item'),
-  body('shippingAddress.firstName').trim().isLength({ min: 2 }).withMessage('First name is required'),
-  body('shippingAddress.lastName').trim().isLength({ min: 2 }).withMessage('Last name is required'),
+  body('shippingAddress.firstName').trim().isLength({ min: 1 }).withMessage('First name is required'),
+  body('shippingAddress.lastName').trim().isLength({ min: 1 }).withMessage('Last name is required'),
+  body('shippingAddress.street').optional().trim(),
+  body('shippingAddress.city').optional().trim(),
+  body('shippingAddress.phone').optional().trim(),
   body('paymentMethod').isIn(['card', 'paypal', 'bank_transfer', 'cod', 'mpesa']).withMessage('Valid payment method is required')
 ], async (req, res) => {
   try {
-    console.log('Order creation request body:', req.body);
+    console.log('Order creation request body:', JSON.stringify(req.body, null, 2));
+    console.log('User from token:', req.user);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       console.log('Validation errors:', errors.array());
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array() 
+      });
     }
 
     const { items, shippingAddress, billingAddress, paymentMethod, paymentId } = req.body;
+
+    // Additional validation
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Order must contain at least one item' 
+      });
+    }
+
+    if (!shippingAddress) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Shipping address is required' 
+      });
+    }
+
+    if (!shippingAddress.firstName || shippingAddress.firstName.trim().length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'First name is required in shipping address' 
+      });
+    }
+
+    if (!shippingAddress.lastName || shippingAddress.lastName.trim().length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Last name is required in shipping address' 
+      });
+    }
 
     // Validate and calculate totals
     let subtotal = 0;
     const orderItems = [];
 
     for (const item of items) {
-      const product = await Product.findById(item.product);
+      console.log(`Processing item:`, JSON.stringify(item, null, 2));
+      console.log(`item.product type:`, typeof item.product);
+      console.log(`item.product value:`, item.product);
+      console.log(`item.product._id:`, item.product?._id);
+      
+      // Handle both item.product and item.product._id cases
+      const productId = item.product?._id || item.product;
+      console.log(`Extracted productId:`, productId);
+      
+      if (!productId) {
+        console.log(`Failed to extract product ID from item:`, item);
+        return res.status(400).json({ 
+          success: false,
+          message: 'Product ID is required for each item' 
+        });
+      }
+
+      if (!item.quantity || item.quantity < 1) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Valid quantity is required for each item' 
+        });
+      }
+
+      const product = await Product.findById(productId);
       if (!product) {
-        return res.status(400).json({ message: `Product ${item.product} not found` });
+        return res.status(400).json({ 
+          success: false,
+          message: `Product ${productId} not found` 
+        });
+      }
+
+      if (!product.isActive) {
+        return res.status(400).json({ 
+          success: false,
+          message: `Product ${product.name} is no longer available` 
+        });
       }
 
       if (product.stock < item.quantity) {
         return res.status(400).json({ 
+          success: false,
           message: `Insufficient stock for ${product.name}. Available: ${product.stock}` 
         });
       }
@@ -43,7 +116,7 @@ router.post('/', auth, [
       subtotal += itemTotal;
 
       orderItems.push({
-        product: product._id,
+        product: productId,
         variant: item.variant,
         quantity: item.quantity,
         price: product.price,
@@ -81,6 +154,7 @@ router.post('/', auth, [
     await order.save();
 
     res.status(201).json({
+      success: true,
       message: 'Order created successfully',
       order
     });

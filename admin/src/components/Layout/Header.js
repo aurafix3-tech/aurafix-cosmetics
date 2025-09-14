@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Bell, Search, User, LogOut } from 'lucide-react';
+import { Bell, Search, User, LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 const HeaderContainer = styled.header`
@@ -13,6 +13,41 @@ const HeaderContainer = styled.header`
   position: sticky;
   top: 0;
   z-index: 100;
+  
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+  }
+`;
+
+const MobileMenuButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  min-width: 44px;
+
+  &:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+`;
+
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
 `;
 
 const SearchContainer = styled.div`
@@ -20,6 +55,10 @@ const SearchContainer = styled.div`
   flex: 1;
   max-width: 400px;
   margin-right: 24px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 
   input {
     width: 100%;
@@ -47,6 +86,10 @@ const HeaderActions = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
+  
+  @media (max-width: 768px) {
+    gap: 8px;
+  }
 `;
 
 const NotificationButton = styled.button`
@@ -58,6 +101,11 @@ const NotificationButton = styled.button`
   cursor: pointer;
   color: #6b7280;
   transition: all 0.3s ease;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background: #f3f4f6;
@@ -106,6 +154,10 @@ const UserMenu = styled.div`
     flex-direction: column;
     align-items: flex-start;
 
+    @media (max-width: 768px) {
+      display: none;
+    }
+
     .name {
       font-weight: 600;
       color: #374151;
@@ -128,6 +180,11 @@ const LogoutButton = styled.button`
   cursor: pointer;
   color: #6b7280;
   transition: all 0.3s ease;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background: #fee2e2;
@@ -135,18 +192,24 @@ const LogoutButton = styled.button`
   }
 `;
 
-const Header = () => {
+const Header = ({ sidebarCollapsed, isMobile, onToggleSidebar }) => {
   const { user, logout } = useAuthStore();
 
   return (
     <HeaderContainer>
-      <SearchContainer>
-        <Search size={16} className="search-icon" />
-        <input
-          type="text"
-          placeholder="Search products, orders, users..."
-        />
-      </SearchContainer>
+      <HeaderLeft>
+        <MobileMenuButton onClick={onToggleSidebar}>
+          <Menu size={20} />
+        </MobileMenuButton>
+        
+        <SearchContainer>
+          <Search size={16} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search products, orders, users..."
+          />
+        </SearchContainer>
+      </HeaderLeft>
 
       <HeaderActions>
         <NotificationButton>

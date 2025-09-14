@@ -7,7 +7,7 @@ require('dotenv').config();
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aurafix');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://aurafix:honeywellT55$@cluster0.y6e7drb.mongodb.net/aurafix?retryWrites=true&w=majority&appName=Cluster0');
     console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error);
