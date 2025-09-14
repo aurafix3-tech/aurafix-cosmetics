@@ -5,6 +5,10 @@ import App from './App';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
+import axios from 'axios';
+
+// Configure axios base URL
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://aurafix-backend.onrender.com';
 
 const queryClient = new QueryClient({
   defaultOptions: {
