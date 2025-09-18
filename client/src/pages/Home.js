@@ -473,15 +473,25 @@ const Home = () => {
   ];
 
   // Fetch featured products from API
-  const { data: featuredProducts = [], isLoading: featuredLoading } = useQuery(
+  const { data: featuredProducts = [], isLoading: featuredLoading, error: featuredError } = useQuery(
     'featuredProducts',
     async () => {
-      const response = await axios.get('/api/products/featured/list');
-      return response.data;
+      try {
+        const response = await axios.get('/api/products/featured/list');
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+        // Return empty array instead of throwing to prevent app crash
+        return [];
+      }
     },
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
       cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+      onError: (error) => {
+        console.error('Featured products query error:', error);
+      }
     }
   );
 
