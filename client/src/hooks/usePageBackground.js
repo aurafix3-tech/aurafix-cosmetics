@@ -60,9 +60,28 @@ const usePageBackground = (pageName) => {
         }
 
         setLoading(true);
+        
+        // Add timeout to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/backgrounds/${pageName}`
+          `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/backgrounds/${pageName}`,
+          { 
+            signal: controller.signal,
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          }
         );
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
         
         if (mountedRef.current) {
@@ -75,9 +94,9 @@ const usePageBackground = (pageName) => {
           }
         }
       } catch (err) {
-        console.error('Error fetching page background:', err);
+        console.warn(`Failed to fetch page background for ${pageName}:`, err.message);
         if (mountedRef.current) {
-          setError(err);
+          // Don't set error state to prevent crashes, just log and continue
           setBackground(null);
         }
       } finally {

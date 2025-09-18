@@ -13,7 +13,7 @@ import LoadingSpinner from './components/UI/LoadingSpinner';
 import ErrorBoundary from './components/UI/ErrorBoundary';
 
 // Pages
-import Home from './pages/Home';
+import Home from './pages/HomeSimple';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
@@ -78,17 +78,15 @@ function App() {
               <Route 
                 path="/" 
                 element={
-                  <PageWrapper pageName="home" loadingText="Welcome to AuraFix">
-                    <motion.div
-                      initial="initial"
-                      animate="in"
-                      exit="out"
-                      variants={pageVariants}
-                      transition={pageTransition}
-                    >
-                      <Home />
-                    </motion.div>
-                  </PageWrapper>
+                  <motion.div
+                    initial="initial"
+                    animate="in"
+                    exit="out"
+                    variants={pageVariants}
+                    transition={pageTransition}
+                  >
+                    <Home />
+                  </motion.div>
                 } 
               />
               <Route 
