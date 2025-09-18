@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,6 +10,22 @@ const fadeIn = keyframes`
 const pulse = keyframes`
   0%, 100% { transform: scale(1); opacity: 0.7; }
   50% { transform: scale(1.1); opacity: 1; }
+`;
+
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`;
+
+const glow = keyframes`
+  0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
+  50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8), 0 0 60px rgba(102, 126, 234, 0.4); }
+`;
+
+const gradientShift = keyframes`
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 `;
 
 const LoadingContainer = styled(motion.div)`
@@ -32,16 +48,35 @@ const BackgroundMedia = styled.div`
   width: 100%;
   height: 100%;
   z-index: 1;
+  overflow: hidden;
 
   img, video {
     width: 100%;
     height: 100%;
     object-fit: ${props => props.position || 'cover'};
     object-position: center;
+    transition: all 0.3s ease;
   }
 
   video {
     pointer-events: none;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    animation: ${shimmer} 2s ease-in-out infinite;
+    z-index: 2;
   }
 `;
 
@@ -68,18 +103,39 @@ const LoadingContent = styled.div`
 `;
 
 const Logo = styled.div`
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: bold;
-  letter-spacing: 2px;
-  animation: ${pulse} 2s ease-in-out infinite;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 3px;
+  background: linear-gradient(45deg, #fff, #667eea, #764ba2, #fff);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: ${pulse} 2s ease-in-out infinite, ${glow} 3s ease-in-out infinite;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+  position: relative;
+
+  &::after {
+    content: 'AuraFix';
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: ${shimmer} 2s ease-in-out infinite;
+  }
 
   @media (max-width: 768px) {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
+    letter-spacing: 2px;
   }
 
   @media (max-width: 480px) {
-    font-size: 2rem;
+    font-size: 2.2rem;
+    letter-spacing: 1px;
   }
 `;
 
@@ -95,23 +151,60 @@ const LoadingText = styled.div`
 `;
 
 const ProgressBar = styled.div`
-  width: 300px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
+  width: 350px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   overflow: hidden;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    animation: ${shimmer} 1.5s ease-in-out infinite;
+  }
 
   @media (max-width: 480px) {
-    width: 250px;
+    width: 280px;
   }
 `;
 
 const Progress = styled(motion.div)`
   height: 100%;
-  background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f, #4d96ff);
+  background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
   background-size: 200% 100%;
-  animation: ${fadeIn} 0.5s ease-in;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    border-radius: 10px;
+    animation: ${shimmer} 1s ease-in-out infinite;
+  }
 `;
 
 const SpinnerContainer = styled.div`
@@ -121,11 +214,30 @@ const SpinnerContainer = styled.div`
 `;
 
 const Dot = styled(motion.div)`
-  width: 12px;
-  height: 12px;
-  background: white;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 15px rgba(102, 126, 234, 0.8), 0 0 30px rgba(102, 126, 234, 0.4);
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+  }
+`;
+
+const ImagePreloader = styled.img`
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
 `;
 
 const PageLoadingScreen = ({ 
@@ -133,32 +245,65 @@ const PageLoadingScreen = ({
   onComplete, 
   backgroundData = null,
   loadingText = "Loading...",
-  duration = 2000 
+  duration = 3000 
 }) => {
   const [progress, setProgress] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [mediaError, setMediaError] = useState(false);
+  const imageRef = useRef(null);
+
+  // Preload background image
+  useEffect(() => {
+    if (backgroundData && backgroundData.mediaType === 'image') {
+      const img = new Image();
+      img.onload = () => setImageLoaded(true);
+      img.onerror = () => setMediaError(true);
+      img.src = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${backgroundData.mediaUrl}`;
+    } else {
+      setImageLoaded(true);
+    }
+  }, [backgroundData]);
 
   useEffect(() => {
     if (!isVisible) return;
 
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        const increment = 100 / (duration / 50); // Update every 50ms
-        const newProgress = prev + increment;
-        
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            onComplete && onComplete();
-          }, 300);
-          return 100;
-        }
-        
-        return newProgress;
-      });
-    }, 50);
+    // Wait for image to load before starting progress
+    const startProgress = () => {
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          const increment = 100 / (duration / 30); // Update every 30ms for smoother animation
+          const newProgress = prev + increment;
+          
+          if (newProgress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              onComplete && onComplete();
+            }, 500);
+            return 100;
+          }
+          
+          return newProgress;
+        });
+      }, 30);
+      return interval;
+    };
 
-    return () => clearInterval(interval);
-  }, [isVisible, duration, onComplete]);
+    let interval;
+    if (imageLoaded || mediaError) {
+      interval = startProgress();
+    } else {
+      // Wait for image to load
+      const checkImage = setInterval(() => {
+        if (imageLoaded || mediaError) {
+          clearInterval(checkImage);
+          interval = startProgress();
+        }
+      }, 100);
+      return () => clearInterval(checkImage);
+    }
+
+    return () => interval && clearInterval(interval);
+  }, [isVisible, duration, onComplete, imageLoaded, mediaError]);
 
   const dotVariants = {
     initial: { y: 0 },
@@ -181,7 +326,7 @@ const PageLoadingScreen = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {backgroundData && (
+          {backgroundData && !mediaError && (
             <BackgroundMedia position={backgroundData.position}>
               {backgroundData.mediaType === 'video' ? (
                 <video
@@ -189,15 +334,34 @@ const PageLoadingScreen = ({
                   muted
                   loop
                   playsInline
+                  onError={() => setMediaError(true)}
                   src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${backgroundData.mediaUrl}`}
                 />
               ) : (
                 <img
+                  ref={imageRef}
                   src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${backgroundData.mediaUrl}`}
                   alt={backgroundData.alt || 'Loading background'}
+                  onError={() => setMediaError(true)}
+                  style={{ opacity: imageLoaded ? 1 : 0 }}
                 />
               )}
             </BackgroundMedia>
+          )}
+          
+          {/* Fallback gradient background */}
+          {(!backgroundData || mediaError) && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%)',
+              backgroundSize: '400% 400%',
+              animation: `${gradientShift} 8s ease infinite`,
+              zIndex: 1
+            }} />
           )}
           
           <Overlay 
