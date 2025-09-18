@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const fadeIn = keyframes`
@@ -75,7 +75,7 @@ const BackgroundMedia = styled.div`
       rgba(255, 255, 255, 0.1),
       transparent
     );
-    animation: ${shimmer} 2s ease-in-out infinite;
+    ${css`animation: ${shimmer} 2s ease-in-out infinite;`}
     z-index: 2;
   }
 `;
@@ -111,7 +111,7 @@ const Logo = styled.div`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: ${pulse} 2s ease-in-out infinite, ${glow} 3s ease-in-out infinite;
+  ${css`animation: ${pulse} 2s ease-in-out infinite, ${glow} 3s ease-in-out infinite;`}
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
   position: relative;
 
@@ -125,7 +125,7 @@ const Logo = styled.div`
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: ${shimmer} 2s ease-in-out infinite;
+    ${css`animation: ${shimmer} 2s ease-in-out infinite;`}
   }
 
   @media (max-width: 768px) {
@@ -173,7 +173,7 @@ const ProgressBar = styled.div`
       rgba(255, 255, 255, 0.1),
       transparent
     );
-    animation: ${shimmer} 1.5s ease-in-out infinite;
+    ${css`animation: ${shimmer} 1.5s ease-in-out infinite;`}
   }
 
   @media (max-width: 480px) {
@@ -203,7 +203,7 @@ const Progress = styled(motion.div)`
       transparent
     );
     border-radius: 10px;
-    animation: ${shimmer} 1s ease-in-out infinite;
+    ${css`animation: ${shimmer} 1s ease-in-out infinite;`}
   }
 `;
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, ShoppingBag, Zap, Crown } from 'lucide-react';
@@ -26,7 +26,7 @@ const HeroSection = styled.section`
   align-items: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
   background-size: 400% 400%;
-  animation: ${gradientMove} 15s ease infinite;
+  ${css`animation: ${gradientMove} 15s ease infinite;`}
   position: relative;
   overflow: hidden;
   
@@ -71,10 +71,11 @@ const HeroText = styled.div`
     margin-bottom: 24px;
     background: linear-gradient(135deg, #fff 0%, #f0f0f0 50%, #fff 100%);
     background-size: 200% 100%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: ${gradientMove} 3s ease infinite;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    ${css`animation: ${gradientMove} 3s ease infinite;`}
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 
     @media (max-width: 768px) {
@@ -156,7 +157,7 @@ const HeroImage = styled.div`
   background: url('https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80') center/cover;
   border-radius: 25px;
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  animation: ${float} 6s ease-in-out infinite;
+  ${css`animation: ${float} 6s ease-in-out infinite;`}
   overflow: hidden;
   
   &::before {
@@ -187,9 +188,10 @@ const SectionTitle = styled.h2`
   text-align: center;
   margin-bottom: 60px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 
   @media (max-width: 768px) {
     font-size: 2rem;
