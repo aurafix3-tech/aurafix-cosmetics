@@ -1,7 +1,7 @@
 {
-  "name": "aurafix-backend",
+  "name": "aurafixx-backend",
   "version": "1.0.0",
-  "description": "Backend API for AuraFix Cosmetics Store",
+  "description": "Backend API for Aurafixx Cosmetics Store",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -34,6 +34,6 @@
     "api",
     "nodejs"
   ],
-  "author": "AuraFix Team",
+  "author": "Aurafixx Team",
   "license": "MIT"
 }

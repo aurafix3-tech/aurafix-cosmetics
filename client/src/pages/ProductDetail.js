@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useQuery } from 'react-query';
 import axios from 'axios';
-import Product3DViewer from '../components/3D/Product3DViewer';
+import ProductViewer from '../components/Product/ProductViewer';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
@@ -30,7 +30,7 @@ const BackButton = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #667eea;
+  color: #3b82f6;
   text-decoration: none;
   font-weight: 500;
   margin-bottom: 32px;
@@ -70,7 +70,7 @@ const ProductImages = styled.div`
 const Thumbnail = styled.button`
   width: 80px;
   height: 80px;
-  border: 2px solid ${props => props.$active ? '#667eea' : '#e1e5e9'};
+  border: 2px solid ${props => props.$active ? '#3b82f6' : '#e1e5e9'};
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
@@ -85,7 +85,7 @@ const Thumbnail = styled.button`
   }
 
   &:hover {
-    border-color: #667eea;
+    border-color: #3b82f6;
   }
 `;
 
@@ -98,7 +98,7 @@ const ProductInfo = styled.div`
   }
 
   .brand {
-    color: #667eea;
+    color: #3b82f6;
     font-weight: 600;
     margin-bottom: 8px;
     text-transform: uppercase;
@@ -137,7 +137,7 @@ const Price = styled.div`
   .current-price {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #667eea;
+    color: #3b82f6;
   }
 
   .compare-price {
@@ -172,8 +172,8 @@ const VariantOptions = styled.div`
 
 const VariantOption = styled.button`
   padding: 8px 16px;
-  border: 2px solid ${props => props.selected ? '#667eea' : '#e1e5e9'};
-  background: ${props => props.selected ? '#667eea' : 'white'};
+  border: 2px solid ${props => props.selected ? '#3b82f6' : '#e1e5e9'};
+  background: ${props => props.selected ? '#3b82f6' : 'white'};
   color: ${props => props.selected ? 'white' : '#333'};
   border-radius: 8px;
   cursor: pointer;
@@ -181,7 +181,7 @@ const VariantOption = styled.button`
   font-weight: 500;
 
   &:hover {
-    border-color: #667eea;
+    border-color: #3b82f6;
   }
 `;
 
@@ -248,7 +248,7 @@ const Actions = styled.div`
 const AddToCartButton = styled(motion.button)`
   flex: 1;
   padding: 16px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -289,7 +289,7 @@ const Feature = styled.div`
   border-radius: 8px;
 
   .icon {
-    color: #667eea;
+    color: #3b82f6;
   }
 
   .text {
@@ -316,7 +316,7 @@ const TabButton = styled.button`
   border: none;
   font-size: 16px;
   font-weight: 600;
-  color: ${props => props.active ? '#667eea' : '#666'};
+  color: ${props => props.active ? '#3b82f6' : '#666'};
   cursor: pointer;
   position: relative;
   transition: color 0.3s ease;
@@ -328,7 +328,7 @@ const TabButton = styled.button`
     left: 0;
     right: 0;
     height: 2px;
-    background: #667eea;
+    background: #3b82f6;
     transform: scaleX(${props => props.active ? 1 : 0});
     transition: transform 0.3s ease;
   }
@@ -405,7 +405,7 @@ const ProductDetail = () => {
       <ProductGrid>
         <ProductImages>
           <div className="main-viewer">
-            <Product3DViewer 
+            <ProductViewer 
               product={product}
               height="500px"
               showControls={true}

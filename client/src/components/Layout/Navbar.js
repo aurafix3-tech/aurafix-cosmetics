@@ -304,7 +304,7 @@ const Navbar = () => {
   return (
     <NavbarContainer>
       <NavContent>
-        <Logo to="/">AuraFix</Logo>
+        <Logo to="/">Aurafixx</Logo>
         
         <NavLinks>
           <NavLink to="/">Home</NavLink>

@@ -161,7 +161,7 @@ const Sidebar = ({ collapsed, isMobile, onToggle }) => {
           <div className="icon">
             <Sparkles size={18} />
           </div>
-          <span className="text">AuraFix Admin</span>
+          <span className="text">AuraFixx Admin</span>
         </Logo>
         <ToggleButton onClick={onToggle}>
           {collapsed ? <Menu size={20} /> : <X size={20} />}

@@ -1,15 +1,14 @@
 {
-  "name": "aurafix-client",
+  "name": "aurafixx-client",
   "version": "1.0.0",
-  "description": "AuraFix Cosmetics Store - Client Side",
+  "description": "Aurafixx Cosmetics Store - Client Side",
   "private": true,
   "dependencies": {
     "@headlessui/react": "^1.7.17",
-    "@react-three/drei": "^9.88.13",
-    "@react-three/fiber": "^8.15.11",
     "axios": "^1.5.0",
     "framer-motion": "^10.16.4",
-    "gsap": "^3.12.2",
+    "gsap": "^3.13.0",
+    "leva": "^0.10.0",
     "lottie-react": "^2.4.0",
     "lucide-react": "^0.279.0",
     "react": "^18.2.0",
@@ -22,7 +21,6 @@
     "react-scripts": "5.0.1",
     "styled-components": "^6.0.7",
     "swiper": "^10.3.1",
-    "three": "^0.156.1",
     "zustand": "^4.4.1"
   },
   "scripts": {

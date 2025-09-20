@@ -188,7 +188,7 @@ const Footer = () => {
       <FooterContent>
         <FooterGrid>
           <FooterSection>
-            <h3>AuraFix</h3>
+            <h3>Aurafixx</h3>
             <p style={{ color: '#b8b8b8', lineHeight: 1.6, marginBottom: '20px' }}>
               Discover the perfect cosmetics for your unique beauty. Premium quality products 
               that enhance your natural glow.
@@ -237,7 +237,7 @@ const Footer = () => {
             </ContactInfo>
             <ContactInfo>
               <Mail size={16} />
-              <span>aurafix3@gmail.com</span>
+              <span>aurafixx3@gmail.com</span>
             </ContactInfo>
             <ContactInfo>
               <MapPin size={16} />
@@ -263,7 +263,7 @@ const Footer = () => {
 
         <FooterBottom>
           <Copyright>
-            © 2024 AuraFix. All rights reserved.
+            © 2024 Aurafixx. All rights reserved.
           </Copyright>
           <PaymentMethods>
             <PaymentIcon>VISA</PaymentIcon>

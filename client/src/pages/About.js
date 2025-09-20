@@ -12,7 +12,7 @@ const AboutContainer = styled.div`
 const Hero = styled.section`
   text-align: center;
   padding: 80px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border-radius: 20px;
   color: white;
   margin-bottom: 80px;
@@ -40,7 +40,7 @@ const Section = styled.section`
     font-weight: 700;
     text-align: center;
     margin-bottom: 60px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -64,7 +64,7 @@ const ValueCard = styled(motion.div)`
     width: 80px;
     height: 80px;
     margin: 0 auto 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -90,7 +90,7 @@ const About = () => {
     {
       icon: <Sparkles size={32} />,
       title: "Innovation",
-      description: "We're pioneering the future of beauty with cutting-edge 3D technology and immersive shopping experiences."
+      description: "We're pioneering the future of beauty with cutting-edge technology and immersive shopping experiences."
     },
     {
       icon: <Heart size={32} />,
@@ -117,9 +117,9 @@ const About = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1>About AuraFix</h1>
+          <h1>About AuraFixx</h1>
           <p>
-            We're revolutionizing the beauty industry with innovative 3D technology, 
+            We're revolutionizing the beauty industry with innovative technology, 
             premium products, and an unparalleled shopping experience that celebrates your unique beauty.
           </p>
         </motion.div>

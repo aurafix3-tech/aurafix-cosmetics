@@ -80,6 +80,18 @@ const BackgroundMedia = styled.div`
   }
 `;
 
+const FallbackBackground = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+  background-size: 400% 400%;
+  ${css`animation: ${gradientShift} 8s ease infinite;`}
+  z-index: 1;
+`;
+
 const Overlay = styled.div`
   position: absolute;
   top: 0;
@@ -116,7 +128,7 @@ const Logo = styled.div`
   position: relative;
 
   &::after {
-    content: 'AuraFix';
+    content: 'Aurafixx';
     position: absolute;
     top: 0;
     left: 0;
@@ -351,17 +363,7 @@ const PageLoadingScreen = ({
           
           {/* Fallback gradient background */}
           {(!backgroundData || mediaError) && (
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%)',
-              backgroundSize: '400% 400%',
-              animation: `${gradientShift} 8s ease infinite`,
-              zIndex: 1
-            }} />
+            <FallbackBackground />
           )}
           
           <Overlay 
@@ -370,7 +372,7 @@ const PageLoadingScreen = ({
           />
           
           <LoadingContent>
-            <Logo>AuraFix</Logo>
+            <Logo>Aurafixx</Logo>
             <LoadingText>{loadingText}</LoadingText>
             
             <ProgressBar>

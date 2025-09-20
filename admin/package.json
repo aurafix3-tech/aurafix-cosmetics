@@ -1,7 +1,7 @@
 {
-  "name": "aurafix-admin",
+  "name": "aurafixx-admin",
   "version": "1.0.0",
-  "description": "AuraFix Admin Dashboard",
+  "description": "Aurafixx Admin Dashboard",
   "private": true,
   "dependencies": {
     "@headlessui/react": "^1.7.17",

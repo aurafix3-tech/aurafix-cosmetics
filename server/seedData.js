@@ -8,7 +8,7 @@ require('dotenv').config();
 const seedData = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://aurafix:honeywellT55$@cluster0.y6e7drb.mongodb.net/aurafix?retryWrites=true&w=majority&appName=Cluster0');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://aurafixx:honeywellT55$@cluster0.y6e7drb.mongodb.net/aurafixx?retryWrites=true&w=majority&appName=Cluster0');
     console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Production database' : 'Local database');
     console.log('Connected to MongoDB');
 
@@ -22,7 +22,7 @@ const seedData = async () => {
     const adminUser = new User({
       firstName: 'Admin',
       lastName: 'User',
-      email: 'admin@aurafix.com',
+      email: 'admin@aurafixx.com',
       password: 'admin123',
       role: 'admin'
     });
@@ -222,7 +222,7 @@ const seedData = async () => {
 
     console.log('\n✅ Sample data created successfully!');
     console.log('\n📧 Admin Login:');
-    console.log('Email: admin@aurafix.com');
+    console.log('Email: admin@aurafixx.com');
     console.log('Password: admin123');
     console.log('\n👤 Customer Login:');
     console.log('Email: jane@example.com');

@@ -1,4 +1,4 @@
-# AuraFix - Cosmetics Ecommerce Store
+# Aurafixx - Cosmetics Ecommerce Store
 
 A modern, full-featured cosmetics ecommerce platform with 3D product visualization and comprehensive admin dashboard.
 
@@ -58,7 +58,7 @@ A modern, full-featured cosmetics ecommerce platform with 3D product visualizati
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd AuraFix
+   cd Aurafixx
    ```
 
 2. **Install backend dependencies**
@@ -86,7 +86,7 @@ A modern, full-featured cosmetics ecommerce platform with 3D product visualizati
    ```env
    NODE_ENV=development
    PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/aurafix
+   MONGODB_URI=mongodb://localhost:27017/aurafixx
    JWT_SECRET=your-super-secret-jwt-key-here
    JWT_EXPIRE=30d
    
@@ -136,7 +136,7 @@ A modern, full-featured cosmetics ecommerce platform with 3D product visualizati
 ## 📁 Project Structure
 
 ```
-AuraFix/
+Aurafixx/
 ├── server/                 # Backend API
 │   ├── models/            # Database models
 │   ├── routes/            # API routes

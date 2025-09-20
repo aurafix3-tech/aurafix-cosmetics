@@ -11,12 +11,12 @@ import {
   ShoppingBag,
   ChevronDown,
   Square,
-  Columns
+  Columns,
+  Eye
 } from 'lucide-react';
 import { useQuery } from 'react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Product3DViewer from '../components/3D/Product3DViewer';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
@@ -34,7 +34,7 @@ const ProductsContainer = styled.div`
   }
   
   @media (max-width: 480px) {
-    padding: 16px 12px;
+    padding: 12px 8px;
   }
 `;
 
@@ -49,7 +49,7 @@ const Header = styled.div`
   h1 {
     font-size: 2.5rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -68,8 +68,11 @@ const Header = styled.div`
   }
   
   @media (max-width: 480px) {
+    margin-bottom: 20px;
+    gap: 12px;
+    
     h1 {
-      font-size: 1.75rem;
+      font-size: 1.8rem;
     }
   }
 `;
@@ -128,8 +131,8 @@ const SearchInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 
   @media (max-width: 768px) {
@@ -152,8 +155,8 @@ const SearchButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    color: #667eea;
-    background: rgba(102, 126, 234, 0.1);
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
   }
 `;
 
@@ -169,8 +172,8 @@ const FilterButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: #667eea;
-    color: #667eea;
+    border-color: #3b82f6;
+    color: #3b82f6;
   }
 `;
 
@@ -188,7 +191,7 @@ const ViewToggle = styled.div`
 
 const ViewButton = styled.button`
   padding: 8px 12px;
-  background: ${props => props.$active ? '#667eea' : 'transparent'};
+  background: ${props => props.$active ? '#3b82f6' : 'transparent'};
   color: ${props => props.$active ? 'white' : '#666'};
   border: none;
   border-radius: 4px;
@@ -232,7 +235,7 @@ const FilterOptions = styled.div`
 
 const FilterChip = styled.button`
   padding: 8px 16px;
-  background: ${props => props.$active ? '#667eea' : '#f8f9fa'};
+  background: ${props => props.$active ? '#3b82f6' : '#f8f9fa'};
   color: ${props => props.$active ? 'white' : '#666'};
   border: none;
   border-radius: 20px;
@@ -258,7 +261,7 @@ const PriceRange = styled.div`
     outline: none;
 
     &:focus {
-      border-color: #667eea;
+      border-color: #3b82f6;
     }
   }
 `;
@@ -293,6 +296,7 @@ const ProductCard = styled(motion.div)`
   background: white;
   border-radius: ${props => props.view === 'single' ? '24px' : '16px'};
   overflow: hidden;
+  cursor: pointer;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   display: ${props => props.view === 'list' ? 'flex' : 'block'};
@@ -417,7 +421,7 @@ const ProductMeta = styled.div`
 const Price = styled.div`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #667eea;
+  color: #3b82f6;
 `;
 
 const Rating = styled.div`
@@ -447,12 +451,12 @@ const ActionButton = styled(motion.button)`
 `;
 
 const AddToCartButton = styled(ActionButton)`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   color: white;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
   }
 `;
 
@@ -469,6 +473,20 @@ const WishlistButton = styled(ActionButton)`
   }
 `;
 
+const ViewDetailsButton = styled(ActionButton)`
+  background: transparent;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &:hover {
+    background: #3b82f6;
+    color: white;
+  }
+`;
+
 const Pagination = styled.div`
   display: flex;
   justify-content: center;
@@ -479,7 +497,7 @@ const Pagination = styled.div`
 
 const PageButton = styled.button`
   padding: 8px 12px;
-  background: ${props => props.active ? '#667eea' : 'white'};
+  background: ${props => props.active ? '#3b82f6' : 'white'};
   color: ${props => props.active ? 'white' : '#666'};
   border: 1px solid #e1e5e9;
   border-radius: 8px;
@@ -499,6 +517,7 @@ const PageButton = styled.button`
 const Products = () => {
   console.log('Products component rendering - version 2.0'); // Debug log to force refresh
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [view, setView] = useState('grid');
   const [mobileView, setMobileView] = useState('single'); // single or double for mobile
   const [showFilters, setShowFilters] = useState(false);
@@ -850,6 +869,7 @@ const Products = () => {
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
+                    onClick={() => navigate(`/products/${product._id}`)}
                   >
                     <ProductImage view={view}>
                       {Array.isArray(product.images) && product.images.length > 0 ? (
@@ -917,18 +937,36 @@ const Products = () => {
                         <AddToCartButton
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => handleAddToCart(product)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(product);
+                          }}
                         >
                           <ShoppingBag size={18} />
                           Add to Cart
                         </AddToCartButton>
+
+                        <ViewDetailsButton
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/products/${product._id}`);
+                          }}
+                          title="View product details"
+                        >
+                          <Eye size={18} />
+                        </ViewDetailsButton>
 
                         {user && (
                           <WishlistButton
                             $active={Array.isArray(user.wishlist) && user.wishlist.includes(product._id)}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => handleWishlistToggle(product._id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleWishlistToggle(product._id);
+                            }}
                           >
                             <Heart size={18} />
                           </WishlistButton>

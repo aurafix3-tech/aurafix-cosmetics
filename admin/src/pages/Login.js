@@ -202,7 +202,7 @@ const Login = () => {
           <div className="icon">
             <Sparkles size={24} />
           </div>
-          <div className="text">AuraFix</div>
+          <div className="text">AuraFixx</div>
         </Logo>
 
         <Title>Admin Login</Title>

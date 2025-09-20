@@ -24,7 +24,7 @@ app.use(cors({
     'http://localhost:3001',
     'https://kibetronoh.com',
     'https://www.kibetronoh.com',
-    'https://aurafix.kibetronoh.com',
+    'https://aurafixx.kibetronoh.com',
     'https://admin.kibetronoh.com',
     'https://jovial-otter-ea2ad2.netlify.app',
     /\.netlify\.app$/
@@ -82,7 +82,7 @@ app.use('*', (req, res) => {
 });
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://aurafix:honeywellT55$@cluster0.y6e7drb.mongodb.net/aurafix?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://aurafixx:honeywellT55$@cluster0.y6e7drb.mongodb.net/aurafixx?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
