@@ -25,6 +25,8 @@ app.use(cors({
     'https://kibetronoh.com',
     'https://www.kibetronoh.com',
     'https://aurafixx.kibetronoh.com',
+    'https://aurafixx.com',
+    'https://www.aurafixx.com',
     'https://admin.kibetronoh.com',
     'https://jovial-otter-ea2ad2.netlify.app',
     /\.netlify\.app$/
