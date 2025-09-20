@@ -6,7 +6,7 @@
   NODE_VERSION = "18"
   NPM_VERSION = "9"
   REACT_APP_API_URL = "https://aurafix-backend.onrender.com"
-  REACT_APP_SITE_URL = "https://kibetronoh.com"
+  REACT_APP_SITE_URL = "https://aurafixx.com"
   GENERATE_SOURCEMAP = "false"
   CI = "false"
 
